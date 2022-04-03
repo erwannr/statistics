@@ -1,0 +1,222 @@
+\section{Review of survival analysis}
+\newcommand{\interim}{i}
+\newcommand{\terminal}{i_*}
+
+\newcommand{\tcal}{t^{\mathrm{cal}}}
+\newcommand{\tcaldef}{calendar time}
+\newcommand{\tobsdef}{observation time}
+\newcommand{\tfail}{t^{\dag}}
+\newcommand{\tfaildef}{failure time}
+\newcommand{\tentry}{t^{\mathrm{in}}}
+\newcommand{\tentrydef}{entry time}
+\newcommand{\texit}{t^{\mathrm{out}}}
+\newcommand{\texitdef}{exit time}
+\newcommand{\tonstudy}{t^{+}}
+\newcommand{\tonstudydef}{time on study}
+\newcommand{\tonstudyformula}[1]{(#1-\tentry)^{+}}
+\newcommand{\tcens}{t^{\mathrm{c}}}
+\newcommand{\tcensdef}{censoring time}
+\newcommand{\tcensformula}[1]{\texit \wedge \tonstudy(#1)}
+\newcommand{\tobs}{t^{\mathrm{obs}}}
+\newcommand{\tmin}{t^{*}}
+\newcommand{\tmindef}{first event time}
+\newcommand{\tminformula}[1]{\tfail \wedge \tcens(#1)}
+
+\newcommand{\isfail}{\delta}
+\newcommand{\isfaildef}{failure observed}
+\newcommand{\isfailformula}[1]{1\{\tfail<\tcens(#1)\}}
+\newcommand{\atrisk}{R}
+\newcommand{\atriskdef}{at risk}
+\newcommand{\atriskformula}[2]{1\{#2\leq\tmin(#1)\}}
+\newcommand{\unitcount}{N}
+\newcommand{\unitcountdef}{observed failure prior to}
+\newcommand{\unitcountformula}[2]{\isfail(#1)1\{\tfail\leq #2\}}
+\newcommand{\survresp}{y}
+\newcommand{\survrespdef}{response}
+\newcommand{\survrespformula}[1]{(\tmin(#1),\isfail(#1))}
+\newcommand{\survnuiscov}{x^{\mathrm{nuis}}}
+\newcommand{\survnuiscovdef}{nuisance covariate}
+\newcommand{\survfullcov}{x}
+\newcommand{\survfullcovdef}{covariate}
+\newcommand{\survfullcovformula}[1]{(\treatindic(#1),\survnuiscov(#1))}
+\newcommand{\hazardfullmult}[1]{\exp(\survfullcov'_#1\survfulleffect)}
+
+\newcommand{\nentry}{n}
+\newcommand{\nentrydef}{index for order of entry}
+%\newcommand{\ntarget}{n^*}
+\newcommand{\nentries}{n_*}
+\newcommand{\nentriesdef}{count of entries}
+\newcommand{\nfailed}{n_{\dag}}
+\newcommand{\nfaileddef}{count of observed failures}
+\newcommand{\nfailedformula}[1]{\sum_{\{n\leq \nentries(#1)\}} \isfail_n(#1)}
+\newcommand{\survdata}{D}
+\newcommand{\survdatadef}{data}
+\newcommand{\survdataformula}[1]{D(#1)=(\survcovmat(#1),\survrespmat(#1))}
+%\newcommand{\timeonstudymat}{\mathbf{\tonstudy}}
+%\newcommand{\timeonstudymatdef}{time on study data}
+%\newcommand{\timeonstudymatformula}[1]{(\tonstudy_1,...,\tonstudy_{\nentries(#1)})}
+\newcommand{\survcovmat}{\mathbf{x}}
+\newcommand{\survcovmatdef}{covariate data}
+\newcommand{\survcovmatformula}[1]{(\survfullcov_1,...,\survfullcov_{\nentries(#1)})}
+\newcommand{\survrespmat}{\mathbf{y}}
+\newcommand{\survrespmatdef}{response data}
+\newcommand{\survrespmatformula}[1]{(\survresp_1,...,\survresp_{\nentries(#1)})}
+
+\newcommand{\basehazard}{h_{0}}
+\newcommand{\hazard}{h}
+\newcommand{\cumHazard}{H}
+\newcommand{\basesurv}{S_{0}}
+\newcommand{\surv}{S}
+\newcommand{\treatindic}{z}
+\newcommand{\treatindicdef}{treatment indicator}
+\newcommand{\treateffect}{\theta}
+\newcommand{\treateffectdef}{treatment effect}
+
+%\newcommand{\treateffectpriormean}{\mu}
+%\newcommand{\survliknormapproxvar}{\sigma}
+
+\newcommand{\carlintreateffectpriormean}{\mu}
+\newcommand{\carlindatapoint}{\omega}
+\newcommand{\carlindatapointsd}{\sigma}
+
+\newcommand{\coxlik}{L_{\mathrm{Cox}}}
+\newcommand{\coxloglik}{l_{\mathrm{Cox}}}
+\newcommand{\coxscore}{U_{\mathrm{Cox}}}%should this be \bar{U}
+\newcommand{\coxscorescaled}{\tilde{U}_{\mathrm{Cox}}}
+\newcommand{\coxscorescaledformula}[1]{\coxinfo^{-1/2}(#1)U_{\mathrm{Cox}}(#1)}
+\newcommand{\coxscorescaledapprox}[1]{\tilde{U}_{#1,\mathrm{Cox}}}
+\newcommand{\coxscorescaledapproxformula}[3]{\coxinfo^{-1/2}(#1|#2)U_{\mathrm{Cox}}(#1|#3)}
+\newcommand{\coxinfo}{I_{\mathrm{Cox}}}
+\newcommand{\coxsurvfulleffectmle}{\hat{\beta}_{\mathrm{Cox}}}
+
+\newcommand{\survnuiseffect}{\beta_{\mathrm{nuis}}}
+\newcommand{\survnuiseffectdef}{effect of nuisance covariate}
+\newcommand{\survfulleffect}{\beta}
+\newcommand{\survfulleffectformula}{(\treateffect,\survnuiseffect)}
+\newcommand{\survfulleffectdef}{covariate effect}
+\newcommand{\survhist}{\mathcal{H}}
+\newcommand{\survfullpar}{\xi}
+\newcommand{\survfullpardef}{all parameters}
+\newcommand{\survbasepar}{\phi}
+\newcommand{\survbasepardef}{baseline hazard parameter}
+
+\newcommand{\ph}{proportional hazard}
+
+\newcommand{\survcoxlogliksellke}{\sum_n \int_{[0,t]} 
+\log\left(\frac{\exp(\survfullcov_\nentry'\beta)}{\sum_l R_l(t,s)\exp(\survfullcov_l\beta)}
+\right)\unitcount_n(t,ds)}
+
+\newcommand{\survcoxloglikcox}{\sum_n \isfail_\nentry(t) \left(\survfullcov'_\nentry\survfulleffect-\log\left(\sum_l  \atrisk_l(t,\tfail_\nentry) \exp(x'_\nentry\survfulleffect)\right)\right)
+}
+
+\subsection{Conventions}
+The most general framework that we will consider is that of staggered entry, static covariate and right censoring.  Let's begin with the following definitions
+\begin{center}
+\begin{tabular}{|l|c|l|}\hline
+\multicolumn{3}{|l|}{Conventions}\\\hline
+$\tcal$ & &\tcaldef \\
+%$\tobs$ & &\tobsdef\\
+\hline
+$\tentry$ & &\tentrydef\\
+$\texit$ & &\texitdef\\
+$\tfail$ & &\tfaildef\\
+$\tonstudy(t)$ &  $\tonstudyformula{t}$ & \tonstudydef\\
+$\tcens(t)$ & $\tcensformula{t}$ & \tcensdef  \\
+$\tmin(t)$ & $\tminformula{t}$ & \tmindef\\
+$\isfail(t)$ & $\isfailformula{t}$ &\isfaildef \\
+$\atrisk(t,s)$ & $\atriskformula{t}{s}$ &\atriskdef\\
+$\unitcount(t,s)$ & $\unitcountformula{t}{s}$ & \unitcountdef\\
+$\survnuiscov(t)$ &  & \survnuiscovdef\\
+$\treatindic(t)$ & & \treatindicdef\\
+$\survfullcov(t)$ & $\survfullcovformula{t}$ & \survfullcovdef\\
+$\survresp(t)$ & $\survrespformula{t}$ & \survrespdef\\
+\hline
+$\nentry$ &  &\nentrydef\\
+$\nentries(t)$ &  & \nentriesdef\\
+$\nfailed(t)$ & $\nfailedformula{t}$ &\nfaileddef\\
+$\survcovmat(t)$ & $\survcovmatformula{t}$ & \survcovmatdef\\
+$\survrespmat(t)$ & $\survrespmatformula{t}$ & \survrespmatdef\\
+$\survdata(t)$ & $\survdataformula{t}$& \survdatadef\\\hline
+$\survnuiseffect$ & & \survnuiseffectdef\\
+$\treateffect$& &\treateffectdef\\
+$\survfulleffect$& $\survfulleffectformula$ &\survfulleffectdef\\
+$\survbasepar$& &\survbasepardef\\
+$\survfullpar$& &\survfullpardef\\
+\hline
+\end{tabular}
+\end{center}Note that $\tentry$ is measured on the same scale as $\tcal$ whereas $\texit$ and $\tfail$ are clocks that are started at $\tentry$. In principle, we need to define a joint distribution for $(\tentry,\tfail,\texit)$, but in the definition of $\survdata$ we are implicitly treating $(\tentry,\texit)$ as ancillary variables. The staggered entry and static covariate assumptions imply $\survfullcov(t)=\survfullcov(\tentry),t\geq\tentry$, which justifies our definition of $\survdata$. When the context specifies that we fix $\tcal=t$, we ommit $t$ in all expressions that depend on it, e.g. we write $\survdata$ instead of $\survdata(t)$.
+
+\subsection{Likelihood and derived quantities}
+We restrict the class of model, either parametric or semi--parametric, to the \ph. It is standard convention that $f(.)$, $F(.)$, $\surv(.)$, $\hazard(.)$ and $\cumHazard(.)$ denote the PDF and CDF of time--to-event, survival, hazard and cumulative hazard functions, respectively. The relations between them are given by
+\begin{align}\label{surv_equiv_repres}
+\surv(t) &= 1-F(t) = \mathrm{exp}\left(-\int_0^t \hazard(u)\right) du = \mathrm{exp}(-\cumHazard(t))
+\end{align}and $F(t)=\int_0^t f(u) du$. The \ph\ assumption made at the beginning is given by $\hazard(t|x)= \basehazard(t)\exp(x'\survfulleffect)$, which together with (\ref{surv_equiv_repres}), implies $\surv(t)=\basesurv(t)^{\exp(\survfullcov'\survfulleffect)}$. The name derives from the property that $\hazard(t|\survfullcov_0)/\hazard(t|\survfullcov_1)$, $\survfullcov_0\neq \survfullcov_1$, is independent of $t$. For the particular case $\survfullcov=\treatindic$, $\forall t$, \begin{align}\label{loghazardratio}
+\treateffect&=\log(\hazard(t|\treatindic=1)/\hazard(t|\treatindic=0))\\\label{loglogsurvratio}
+&=\log\left(\log(S(t|\treatindic=1))/\log(S(t|\treatindic=0))\right)
+\end{align}From the first equality $\treateffect$ is often referred to as the log hazard ratio. The second is useful in the Bayesian process of prior elicitation from expert knowledge.
+
+Suppose we postulate a parametric family for $F(.)$ indexed by $\survfullpar\in\Xi$. For example, in the case $t\sim\mathcal{W}(t|\alpha,\gamma)$, $F(t)=1-\mathrm{exp}(-\gamma t^\alpha)$, and $\hazard(t)=\alpha \gamma t^{\alpha-1}$, so that  $\survfullpar=(\alpha,\gamma)$. Furthermore, if $\gamma=\exp(x'\survfulleffect)$, then $\hazard(.|\survfullpar,\survfullcov)$ is a \ph\ with baseline $\basehazard(t|\survbasepar)=\alpha t^{\alpha-1}$, $\phi\equiv\alpha$. Suppose we fix $\tcal=t$. The likelihood, in terms of $\survfullpar$ is %and for the special case considered, are 
+\begin{align}\label{lik_surv_anal_param_1}
+L(D|\survfullpar)&=\prod_{\{n:\isfail_\nentry=1\}} f(\tfail_n|\survfullpar)\prod_{\{\nentry:\isfail_\nentry=0\}} \surv(\tcens_n|\survfullpar)%\\
+%&=(\alpha \gamma)^{\nfailed}
+%\exp\left((\alpha-1)\sum_{\nentry=1}^{\nentries}\isfail_{\nentry}\log(\tmin_\nentry)-\gamma\sum_{\nentry=1}^{\nentries}{\tmin_\nentry}^{\alpha}\right)
+\end{align}
+The \ph\ also permits an important semi--parameric formulaulation under which $\basehazard(.)$ is unspecified and the following partial likelihood (see \cite{1983SellkeSiegmund}) may be justified: 
+\begin{align}\label{survcoxlogliksellke}
+\coxloglik(t|\survfulleffect)&=\survcoxlogliksellke  %\\\label{lik_surv_anal_cox_1}
+%\prod_{\{\nentry:\delta_\nentry=1\}}\left(\frac{\hazard(\tfail_\nentry|\survfulleffect,\survfullcov_\nentry)}{\sum_l %\atrisk_l(\tfail_\nentry)\hazard(t_\nentry|\survfulleffect,\survfullcov_l)}\right)
+\\\label{survcoxloglikcox}
+&=\survcoxloglikcox
+\end{align}%This stems from a partial likelihood argument, under which the likelihood is factored via the multiplication rule for probabilities, and discarding those expression that involve nuisance parameters.
+The term inside the parenthesis of (\ref{survcoxloglikcox}) can be interpreted as the probability that failure is on individual $\nentry$, conditional on failure time equating $\tfail_\nentry$ and the risk set $\{l:\atrisk_l(t,\tfail_\nentry)=1\}$. %there should be a term that takes into account *some elapsed time* for (\ref{lik_surv_anal_cox_2})
+The score and information matrix (adapted from \cite{2003Lawless}, Chapter 7) are
+\begin{align}\label{coxscore}
+\coxscore(t|\survfulleffect)&=\nabla_{\survfulleffect} \coxloglik(t|\survfulleffect)\\\label{coxscore2}
+&=\sum_{\nentry} \isfail_{\nentry}(t) (\survfullcov_\nentry-\bar x(t,\tfail_\nentry|\survfulleffect))\\
+\label{coxinfo}
+\coxinfo(t|\survfulleffect)&=-\partial_{\beta,\beta'}^2 \coxloglik(t|\survfulleffect)\\\label{coxinfo2}
+&=\sum_\nentry \isfail_{\nentry}(t) \frac{\sum_l \atrisk_l(t,\tfail_\nentry)\exp(\survfullcov_l'\survfulleffect)(\survfullcov_l-\bar \survfullcov(t,\tfail_\nentry|\survfulleffect))(\survfullcov_l-\bar \survfullcov(t,\tfail_\nentry|\survfulleffect))'}{\sum_l \atrisk_l(t,\tfail_\nentry)\exp(\survfullcov_l'\survfulleffect)}
+\end{align}where
+\begin{align}\label{coxscorecompensator}
+\bar \survfullcov(t,\tfail_\nentry|\survfulleffect)=\frac{\sum_l \atrisk_l(t,\tfail_\nentry)\survfullcov_l\exp(\survfullcov_l'\survfulleffect)}{\sum_l \atrisk_l(t,\tfail_\nentry)\exp(\survfullcov_l'\survfulleffect)}
+\end{align}For practical purposes, we may treat the partial likelihood as a standard likelihood so that for fixed $t$ but sufficiently large $\nentries$, the following approximations hold: 
+\begin{align}\label{coxscoreapprox_1}
+n^{-1/2}\coxscore(t|\survfulleffect)\sim N(0,n^{-1}\coxinfo(t|\survfulleffect))\\
+\coxsurvfulleffectmle(t|\survfulleffect)\sim N(\survfulleffect,\coxinfo^{-1}(t|\coxsurvfulleffectmle))
+\end{align}where $\coxsurvfulleffectmle$ solves the estimating equation $\coxscore(t|\coxsurvfulleffectmle)=0$. The second line follows from $\coxscore(t|\coxsurvfulleffectmle)\approx \coxscore(t|\survfulleffect)+(\hat\survfulleffect-\survfulleffect)\coxinfo(t|\survfulleffect)$.
+
+For the particular case $\survfullcov\equiv\treatindic$, $\coxscore(t|\treateffect=0)$ is an estimate for the  observed$-$expected number of events in a  treatment group, and it is called the log--rank test statistic. Let $\coxscorescaled(t|\treateffect)=\coxscorescaledformula{t|\treateffect}$. It underpins the popular test of equality between two lifetime distributions: $\mathrm{reject\ if\ }|\coxscorescaled(t|\treateffect=0)|>c_\alpha$. Let $\coxscorescaledapprox{\treateffect_*}(t|\treateffect)=\coxscorescaledapproxformula{t}{\treateffect_*}{\treateffect}$. This quantity is useful for sequential analysis. Specifically, if $\interim=1,...,\terminal$ indexes interim analyses, according to Chapter 9 of \cite{2004Ibrahim}, for $\treateffect$ close to $0$, $\coxscorescaledapprox{\treateffect_*}(t_1,....,t_{\terminal}|\treateffect)=\{\coxscorescaledapprox{\treateffect_*}(t_1|\treateffect),...,\coxscorescaledapprox{\treateffect_*}(t_{\terminal}|\treateffect)\}$ is a normal vector such that
+\begin{align}\label{coxscorescaledapproxdist}
+\coxscorescaledapprox{\treateffect_*}(t_\interim|\treateffect)&\sim N(\coxinfo^{1/2}(t_\interim|\treateffect_*)\treateffect,1))\\\label{coxscorescaledapproxdist2}
+\mathrm{Cov}(\coxscorescaledapprox{\treateffect_*}(t_i|\treateffect),\coxscorescaledapprox{\treateffect_*}(t_{i+k}|\treateffect))|\treateffect_*&=\coxinfo^{1/2}(t_\interim|\treateffect_*)\coxinfo^{-1/2}(t_{\interim+k}|\treateffect_*)
+\end{align}\textbf{todo}: make contiguity argument precise (Chapters 7\&9\cite{1998Vaart} and \cite{1997Bilias}) \textbf{todo}Although \cite{2004Ibrahim} use $\treateffect_*=0$ would it not be better to take $\treateffect_*=\hat\treateffect$, the mle?
+
+Formulations that are intermediary between the fully parameterized version of $L(.|\survfullpar)$ and the partial likelihood $\coxlik(.|\survfulleffect)$ include the piecewise constant hazard model, such that $\survfullpar=(\lambda,\survfulleffect)$ where $\lambda$ is a vector of constants.
+
+\subsection{Bayesian methods}
+Bayesian methods are motivated by 
+\begin{enumerate}
+\item The flexibility of mediating the likelihood $L(D|\survfullpar)$ with a prior $p(\survfullpar)$, 
+which may incorporate expert knowledge or previous studies
+\item The ability, thanks to simulation, to make inference for any sample size  $\nentries$
+\item The independence from inference and the stopping rule. (todo: clarify)
+\end{enumerate}
+
+\textbf{more to be said}
+
+\subsection{Benchmark study}
+Quote from \cite{1998Carlin}:
+\begin{quotation}
+[...] using an AIDS clinical trial dataset originally reported and analyzed by \cite{1994Jacobson}. The data are from a double--blind randomized trial that compared the drug pyrimethamine with placebo for preventing toxoplasmic encephalitis (TE), a major cause of morbidity among AIDS patients. In a Bayesian reanalysis of these data, \cite{1993Carlin} used a \ph\  likelihood with \textbf{response variable equal to the time from randomization until development of TE or death}. Specifically, their model used two covariates for each patient: baseline CD4 count, and the treatment effect indicator (1 for active drug, 0 for placebo). Denoting the parameters that correspond to these two covariates as $\survnuiseffect$ and $\theta$, respectively, \textbf{a marginal partial likelihood for $\theta$ can be obtained by numerically integrating $\survnuiseffect$ out of the Cox partial likelihood}. [...] Following the start of the trial in September of 1990, the trial's data safety and monitoring board met on three occasions. At these three meetings there were data available as of the file closing dates 1/15/91, 7/31/91, and 12/31/91, respectively. At its final meeting the board recommended stopping the trial. [...] The trial did not actually stop until 3/30/92. [...] The standardized cumulative likelihood (i.e. the posterior for $\survfulleffect$ under a flat prior given all the data so far) at each of the four dates mentioned above [which show] a surprising shift towards positive $\treateffect$ values evident in the third and fourth dates reflects and excess of deaths in the treatment group. [...] The very near normal appearance of the curves at the latter three time points justifies an \textbf{assumption of normality for the prior and the likelihood terms}. Thus we take the appropriate normal approximation to the 7/31/91 likelihood, a $N(\carlintreateffectpriormean,\carlindatapointsd_0^2)$ distribution with $\carlintreateffectpriormean=.021$ and $\carlindatapointsd_0=.664^2$ as our prior $p(\treateffect)$ and assume independent $N(\treateffect,\carlindatapointsd_1^2)$ and $N(\treateffect,\carlindatapointsd_2^2)$ distributions for $p(\carlindatapoint_1|\treateffect)$ and $p(\carlindatapoint_2|\treateffect)$, respectively. [...] We \textbf{assume the likelihood variance parameter to be known} using the data based values $\carlindatapointsd_1^2=.488^2$ and $\carlindatapointsd_2^2=.515^2$.
+\end{quotation}
+%Other studies \cite{1993Carlin} and \cite{1993Chaloner} analyse the same dataset. They treat the development of TE as failure and death as censoring. Expert knowledge about survival rates, for a particular $\tonstudy$, under each of the treatment and placebo are translated into a prior for $\treateffect$ via (\ref{loglogsurvratio}). It is noteworthy that expert prior does not lead to a proportional hazard. 
+In terms of our previous notation, the log--likelihood of interest is
+\begin{align}
+\coxloglik(t|\treateffect)=\log\left(\int_{[-\infty,\infty]}\exp(\coxloglik(t|\treateffect,\survnuiseffect))d\survnuiseffect\right)
+\end{align}Using numerical integration, it is reproduced in
+\begin{center} [Figure~\ref{fig:1998carlin_marg}] \end{center}
+
+From the distributional properties of $\carlindatapoint$ stated above, and in view of (\ref{coxscore2}), (\ref{coxinfo2}) and (\ref{coxscorescaledapproxdist}-\ref{coxscorescaledapproxdist2}), we conjecture that what \cite{1998Carlin} calls a datapoint, and its variance parameter assumed to be known, are, for some choice of $\treateffect_*$,  \begin{align}\carlindatapoint_{\interim}|\treateffect&=(\coxinfo(t_{\interim}|\treateffect_*)-\coxinfo(t_{\interim-1}|\treateffect_*))^{-1}(\coxscore(t_{\interim}|\treateffect)-\coxscore(t_{\interim-1}|\treateffect))\\
+\carlindatapointsd_\interim^2&=(\coxinfo(t_{\interim}|\treateffect_*)-\coxinfo(t_{\interim-1}|\treateffect_*))^{-1}
+\end{align}
+

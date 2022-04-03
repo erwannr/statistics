@@ -1,0 +1,61 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathrsfs}
+\usepackage{algorithmic}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{euscript}
+\usepackage{vmargin}
+\usepackage[dvips]{epsfig}
+\usepackage{pst-tree}
+\usepackage{psfrag}
+%\usepackage{flafter}%that's only to keep figures from floating
+%\usepackage{natbib} %DOES NOT WORK
+
+%\usepackage{notebook2e}
+%\usepackage{lcaption}
+
+\setpapersize{USletter}
+\setmarginsrb{2.5cm}{2.5cm}{2.5cm}{1.75cm}{0pt}{0mm}{0pt}{0.70cm}
+
+%Array
+\setlength{\tabcolsep}{30pt}
+\renewcommand{\arraystretch}{1.2}
+
+% Lcaption
+%\smartcap
+%\CapSize=4.5in
+
+
+% Float Control
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{.95}
+
+
+%\title
+%{set up}
+%\author{}
+
+\begin{document}
+\bibliographystyle{plain}
+%\maketitle
+%\begin{abstract}
+%\end{abstract}
+%\include{bellman_is}
+%\include{variance_reduc}
+%\include{data_clustering}
+%\include{figures}
+%\include{sr}
+%\include{fgt_copy}
+%\include{specific_models}
+\include{surv_anal}
+%\include{bandwith_sel}
+\include{surv_anal_output}
+
+\bibliographystyle{plain}
+\bibliography{mybib.bib}
+
+\end{document}

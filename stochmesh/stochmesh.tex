@@ -25,16 +25,12 @@ bibencoding=auto
 \author{Erwann Rogard}
 \date{\ThisDate}
 
-%\title
-%{set up}
-%\author{}
 \usepackage{hyperref}
 \begin{document}
 
 \maketitle
 
-\begin{abstract}Both Sequential clinical trials and option pricing are optimal stopping problems. There exists well documented simulation methods for the latter,
-  are they applicable to the former? Such was the topic of my MPhil examination in December 2005. This is a follow up paper originally dated \origDate. Since it was never made public, the new date is appropriate. The specific method under consideration is the stochastic mesh. It addresses the computational challenge inherent to the intuitive random tree method, by using a combination of independently simulation paths, and likehood ratios linking each node to those in the next period. \autoref{sec:glass} summarizes the existing literature, and goes on to discuss the Bayesian setting. \autoref{sec:param} addresses parametric boundaries.\end{abstract}
+\begin{abstract}Both Sequential clinical trials and (American) option pricing are optimal stopping problems. There exists well documented simulation methods for the latter:  are they applicable to the former? Such was the topic of my MPhil examination in December 2005. This is a follow up paper originally dated \origDate. Since it was never made public, the new date is appropriate. The specific method under consideration is the stochastic mesh. It addresses the computational challenge inherent to the intuitive random tree method, by using a combination of independently simulation paths, and likehood ratios linking each node to those in the next period. \autoref{sec:glass} summarizes the existing literature, and goes on to discuss the Bayesian setting. \autoref{sec:param} addresses parametric boundaries.\end{abstract}
 
 \section{Problem formulation}\label{sec:glass}
 Consider a sequential clinical trial extending over a maximum of $i_*$ periods to assess the effect $\theta$ of a treatment T, in comparison to the placebo P. A prior

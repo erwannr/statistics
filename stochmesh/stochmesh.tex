@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathrsfs}
+\usepackage{datetime2, csquotes}
 \usepackage{algorithmic}
 \usepackage{verbatim}
 \usepackage{graphicx}
@@ -24,6 +25,10 @@
 %\smartcap
 %\CapSize=4.5in
 
+% ---
+\ProvideDocumentCommand{\origDate}{}{\DTMdate{2007-05-14}}
+\ProvideDocumentCommand{\ThisDate}{}{\DTMdate{2022-04-05}}
+% ---
 
 % Float Control
 \renewcommand{\topfraction}{0.95}
@@ -31,17 +36,22 @@
 \renewcommand{\textfraction}{0.05}
 \renewcommand{\floatpagefraction}{.95}
 
+\title{On Bayesian survival analysis and the stochastic mesh method\footnote{Revisions:\url{https://github.com/erwannr/statistics/commits/main/stochmesh}}}
+\author{Erwann Rogard}
+\date{\ThisDate}
 
 %\title
 %{set up}
 %\author{}
+\usepackage{hyperref}
 \begin{document}
-%\maketitle
 
-\section{Intro}
-Section 1 summarizes chapter 8 of Glasserman 2004. We stress the particular requirements under a Bayesian setting. Section 2 addresses the optimization approach to solving the parametric decision rule problem.
+\maketitle
 
-\section{Problem formulation}
+\begin{abstract}Sequential clinical trials are an optimal stopping problem, for which there exist a vast literature in option pricing. The purpose of this paper is to study the applicability of the stochastic mesh method. In a nutshell, the latter addresses the computational challenge inherent to the intuitive random tree method, by using a combination of independent paths, and likehood ratios linking each node to those in the next period. This is note originally dated \origDate~was supposed to be outline of my Phd thesis, whose orals I had defended in December 2005. \autoref{sec:glass} summarizes the existing literature on the stochastic mesh, and goes on to discuss the Bayesian setting. \autoref{sec:param} addresses parametric boundaries\end{abstract}
+
+
+\section{Problem formulation}\label{sec:glass}
 Consider a sequential clinical trial extending over a maximum of $i_*$ periods to assess the effect $\theta$ of a treatment T, in comparison to the placebo P. A prior
 $\nonumber p(\xi|\mathbf{y}_0)$ and a likelihood $p(\mathbf{y}_i|\xi)$ are assumed, 
 where $\xi=(\phi,\theta)$, $\phi$ representing a nuisance parameter and $\mathbf{y}_i=(y_0,...,y_i)$ is data accumulated up to the $i^{\mathrm{th}}$ trial, $0\leq i\leq i_*$. If the $i^{\mathrm{th}}$ trial is carried out, the action space is $\mathcal{A}=\{T,P,C\}$, where $C$ means continue to $i+1$, for $0\leq i<i_*$. For $i=i_*$ the relevant space is $\mathcal{A}^{s}=\{T,P\}$.
@@ -80,7 +90,7 @@ This has the following characteristic:
 \item A trivial optimization problem, (\ref{br_opt}) is solved at each node of the tree\\
 \item The method is independent of the problem's structure (model and loss)
 \item The bias of (\ref{br_cont_approx}) is positive for finite $m$, and zero in the limit as $m\rightarrow\infty$
-\end{enumerate}Due to the first characteristic the algorithm is impractical beyond 2 or 3 periods for a personal computer. However, the memory requirement can be made linear in $i_*$ by depth first processing.
+\end{enumerate}Due to the first characteristic the algorithm is impractical beyond 2 or 3 periods for a personal computer. However, the memory requirement can be made linear in $i_*$ by depth first processing.\par
 
 \subsection{Independent paths alternative}
 To remedy the first limitation of \textit{Algorithm} 1 we replace the simulated tree by independent paths and correct by importance sampling:
@@ -179,7 +189,7 @@ This comes at the cost of having to find an appropriate model and an appropriate
 
 In general, the different portions of the continuation region are parameterized separately i.e. $C_i(\gamma)=C_i(\tilde \gamma_i)$ where $\tilde \gamma_i$ does not overlap with any of the $\tilde \gamma_j$'s. We call $\boldsymbol{\gamma}_i$ the vector $\gamma$ truncated after the i$^{th}$ continuation region, such that $\mathbf{C}_i=\mathbf{C}(\boldsymbol\gamma_i)$.
 
-\section{Solving the parametric boundaries problem}
+\section{Solving the parametric boundaries problem}\label{sec:param}
 The quantity to maximize,(\ref{upsilon_gamma}), is an expectation which in general has to be approximated by a simulation average. One approach therefore, it to sample a fixed number of draws, and vary $\gamma$ in the search for the optimum. Because the resulting function approximation is not smooth, it has to be approximated in successive steps, usually one dimension at at time. Glasserman 2004 warns that this method may not converge to the desired solution. Moreover, we cannot easily control the degree of accuracy if the number of paths is kept fixed.
 
 It may be better to explicitly recognize the stochastic nature of the problem and solve it in an iterative fashion that allows for termination based on some convergence criterion. We start from an initial guess $\gamma^{(0)}$, and update it so as to maximize a local approximation to (\ref{upsilon_gamma}):
@@ -201,15 +211,14 @@ We may re--express (\ref{upsilon_i_a}) as nested integrals:
 \end{align}Taking $\partial/\partial \gamma_j$ of this expression may result in a new expression of nested integral form, with some of the $y_k$'s in $p(\theta,\mathbf{y}_i)$ fixed. The integrand is an un--normalized density, $L_{i,a,j}^{\mathrm{un}}(.)$ under certain conditions, in particular that $u(i,\theta,a)$ is everywhere positive (or negative) on $\Theta$:
 \begin{align}
 \partial_j \upsilon_{i,a}(\boldsymbol{\gamma}_i)\triangleq \partial \upsilon_{i,a}(\boldsymbol{\gamma}_i)/\partial\gamma_j=\mathrm{E}_q[L_{i,a,j}^{\mathrm{un}}(\theta,\mathbf{y}_i)/q^{\mathrm{un}}(\theta)]/\mathrm{E}[1/q^{\mathrm{un}}(\theta)]
-\end{align}where $q(.)$ is an arbitrary density (normalized or not) such that $q\ggp$. In principle the expectations on the right hand side can be approximated by a simulation average. In the particular case $q^{\mathrm{un}}(.)=L_{i,a,j}^{\mathrm{un}}(.)$, an MCMC procedure can be used. This approach would have to be repeated for all admissible combinations $\{i,a,j\}$. Although a given sample may be re--used across $\{i,a,j\}$'s, that would be costly in terms of importance weights calculation and finding a $q(.)$ which is satisfactory for all combinations is a challenge. Provided we can make this claim rigorous, the difficulty that remains is to find a sampler $q(.)$ which works well \emph{across} paths. 
-
-
+\end{align}where $q(.)$ is an arbitrary density (normalized or not) such that $q \gg p$.
+In principle the expectations on the right hand side can be approximated by a simulation average. In the particular case $q^{\mathrm{un}}(.)=L_{i,a,j}^{\mathrm{un}}(.)$, an MCMC procedure can be used. This approach would have to be repeated for all admissible combinations $\{i,a,j\}$. Although a given sample may be re--used across $\{i,a,j\}$'s, that would be costly in terms of importance weights calculation and finding a $q(.)$ which is satisfactory for all combinations is a challenge. Provided we can make this claim rigorous, the difficulty that remains is to find a sampler $q(.)$ which works well \emph{across} paths. \par
 
 A straightforward alternative is the finite difference method, under which (\ref{newt_iter}) is termed the Kiefer--Wolfowitz algorithm. In contrast with the preceding method, we only need to simulate from $p(\theta,\mathbf{y}_i)$.
 
 Fix $b$, so that $\tau=\tau(\gamma^{(b)})$ and let $\tau_k=\tau(\gamma+e_k h_k)$. A general expression for the finite difference gradient is 
 \begin{align}\label{nabla_fd}
-\nabla_{\superscript{\mathrm{FD}}}\upsilon=\mathrm{E}_q[(w\times \nabla_{\mathrm{FD}})u(\theta,\mathrm{y}_\tau)]
+\nabla_{\mathrm{FD}} \upsilon &= \mathrm{E}_q[(w\times \nabla_{\mathrm{FD}})u(\theta,\mathrm{y}_\tau)]
 \end{align}where $q(.)$ is an abitrary distribution such that $q\gg p$, and the k$^{th}$ element of the integrand is
 \begin{align}\label{nabla_u_is}
 (w\times \nabla_{\mathrm{FD}})u(\theta,\mathbf{y}_{\tau})=\frac{(w\times u)(\theta,\mathbf{y}_k)-(w\times u)(\theta,\mathbf{y})}{h_k}
@@ -219,7 +228,8 @@ The procedure to estimate (\ref{nabla_fd}) is to sample $m$ iid paths from $q(\t
 %$\widehat\nabla_{\mathrm{FD}}\upsilon=\hat\mathrm{E}_q[(w\times\nabla_{\mathrm{FD}}u)(\theta,\mathbf{y}_\tau)]$.
 Each term in the difference in (\ref{nabla_u_is}) is evaluated with the same path which reduces variance provided the two terms are positively correlated. At each iteration, $b$, a fresh sample of size $m$ is generated and $\hat \nabla_{\mathrm{FD}}^{(b)}\upsilon$ is computed. In setting $m$ we should keep in mind that averaging of the $\gamma^{(b)}$'s is already present, as implicit in (\ref{newt_iter}). 
 
-We can weaken the above formulation to $w(\theta,\mathbf{y}_{\tau})\propto p(\theta,\mathbf{y}_\tau)/\q(\theta,\mathbf{y}_\tau)$ with an abitrary normalizing constant, which implies that we should rescale the weights to sum to one. This may be a matter of design (see Hestenberg, 1995) or necessity, in case either of $p(.)$ or $p(.)$ are known only up to a constant of proportionality. Unbiasedness of $\hat \nabla_{\mathrm{FD}}\upsilon$, relative to $\nabla_{\mathrm{FD}}\upsilon$ is only preserved in the limit as $n\rightarrow \infty$.
-
+We can weaken the above formulation to $w(\theta,\mathbf{y}_{\tau}) \propto p(\theta,\mathbf{y}_\tau) / q(\theta,\mathbf{y}_\tau)$ with an abitrary normalizing constant, which implies that we should rescale the weights to sum to one.
+This may be a matter of design (see Hestenberg, 1995) or necessity, in case either of $p(.)$ or $p(.)$ are known only up to a constant of proportionality.
+Unbiasedness of $\hat \nabla_{\mathrm{FD}}\upsilon$, relative to $\nabla_{\mathrm{FD}}\upsilon$ is only preserved in the limit as $n\rightarrow \infty$.
 
 \end{document}

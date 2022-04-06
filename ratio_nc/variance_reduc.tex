@@ -1,0 +1,55 @@
+\section{Ratios of normalizing constants}
+In the first subsection, we assume that the pseudo--data points have been determined and explain how to estimate the expectations of interest for a particular $(m_1,m_2)$. 
+
+Let $\mathbf{y}_1=\mathbf{y}_{i}^{m_1}$, $\mathbf{y}_2=\mathbf{y}_{i+1}^{m_2}$, $\mathbf{y}_3=(\mathbf{y}_{i}^{m_1},\mathbf{y}_{i+1}^{m_2})$. We denote the likelihood densities $L_{l}(\xi)=p(\mathbf{y}_l|\xi),l=1,2,3$ and the posterior densities $p_l(\xi)=p(\xi|\mathbf{y}_l),l=0,\ldots,3$. Let $\zeta_0$ and $q_0(.)$ denote the normalizing constant and unnormalized density, respectively, for the prior i.e. $p_0(\xi)=q_0(\xi)/\zeta_0$. Let $\zeta_l=p(\mathbf{y}_l)=\mathrm{E}[L_l(\xi)],l=1,2,3$. We denote the un--normalized posterior densities $q_l(\xi),l=1,2,3$ i.e. $p_l(\xi)=p_0(\xi)L_l(\xi)/\zeta_l=q_l(\xi)/(\zeta_0\zeta_l),l=1,2,3$.
+%We assume that the likelihoods $L_l(.)$ are known exactly i.e. that there are no unknown normalizing constant depending on $\xi$ (see Gelman et al, 2004, Section 10.4 for counterexamples). 
+
+By assumption, each of $\mathbf{y}_l,l=1,2,3$ is associated with a known pseudo data point $\mathbf{y}_l^*,l=1,2,3$. The same conventions apply, with the addition of superscript $^*$. In addition, let $\pi_{l}(.)$ denote a completely known approximation to $p_l^*(.)$ for $l=0,\ldots,3$ (see Gelman et al, 2004, Chapter 9). This can be complemented with an adative procedure as in Oh and Berger, 1992. 
+
+Our problem is to estimate
+\begin{align}
+r=\frac{\zeta_{3}}{\zeta_{1} \zeta_{2}}
+\end{align}under the constraint that, we can only use knowledge of $p_l^*(.),l=1,2,3$ for constructing importance distributions and generate samples from them. 
+
+For the standard ratio of normalizing constant problem say $\zeta_1/\zeta_2$, a number of related methods are available: importance sampling (IS), bridge sampling (BS), path sampling (PS), ratio importance sampling (RIS) and linked importance sampling (LIS). See Gelman and Meng, 1997 for the first three, Chen and Shao, 1997 for the fourth, and Neal, 2005 for the last one. A summary of the first four is provided by Chen et al., 2000. IS, BS and RIS are both conceptually and practically simpler than the other two which were developed to address challenging cases. 
+
+We define the relative error as
+\begin{align}
+\mathrm{RE}^2(\hat r)=\mathrm{E}[(\hat r-r)^2]/r^2
+\end{align}
+
+\subsection{IS}
+Observe that 
+$\mathrm{E}_{\pi_l}[q_l(\xi)/\pi_l(\xi)]=\zeta_0\zeta_l$ and therefore
+\begin{align}\label{r_is}
+r_{\mathrm{IS}}=\frac{\mathrm{E}_{\pi_0}[q_{0}(\xi)/\pi_0(\xi)]\mathrm{E}_{\pi_3}[q_{3}(\xi)/\pi_3(\xi)]}{\mathrm{E}_{\pi_1}[q_{1}(\xi)/\pi_1(\xi)]\mathrm{E}_{\pi_2}[q_{2}(\xi)/\pi_2(\xi)]}
+\end{align}By estimating the expectations above by iid draws from the $\pi_l$'s the relative error is, by the delta method,
+\begin{align}
+\mathrm{RE}^2= \sum_{l=0}^3\frac{1}{n_l^*}\mathrm{E}_{\pi_l}[\left(\frac{p_{l}(\xi)-{\pi}_l(\xi)}{{\pi}_l(\xi)}\right)^2]+o(1/n_*)
+\end{align}
+%&=\sum_{l=0}^3\frac{\mathrm{V}_{\pi_l}[q_{l}(\xi)]}{n_l c_l^2}+o(1/n)\\
+%&=\sum_{l=0}^3\frac{1}{n_l}\mathrm{E}_{\pi_l}[\left(\frac{p_{l}(\xi)-{\pi}_l(\xi)}{{\pi}_l(\xi)}\right)^2]}+o(1/n)\\
+%&=\sum_{l=0}^3\frac{1}{n_l}\mathrm{E}_{\pi_l}[\left(\frac{(p_{l}(\xi)-p^*_{l}(\xi))-({\pi}_l(\xi)-p^*_{l}(\xi))}{{\pi}_l(\xi)}\right)^2]}+o(1/n)
+We now turn to another importance sampling formulation. Define $r^*=\frac{\zeta_{3}^*}{\zeta_{1}^*\zeta_{2}^*}$ and $\tilde r=r/r^*$. From the decomposition $p_l(\xi)=q_0(\xi)L(\mathbf{y}_l|\xi)/(\zeta_0 \zeta_l)$ we see that $\zeta_l/\zeta_l^*=\mathrm{E}_{p_l^*}[L_l(\xi)/L_l^*(\xi)]$ and
+\begin{align}
+\label{r_tilde_is}
+\tilde{r}_{\mathrm{IS}}&=\frac{\mathrm{E}_{p_3^*}[L_{3}(\xi)/L^*_3(\xi)]}{\mathrm{E}_{p_1^*}[L_{1}(\xi)/L^*_1(\xi)]\mathrm{E}_{p_2^*}[L_{2}(\xi)/L^*_2(\xi)]}\\\label{r_star_is}
+r^*_{\mathrm{IS}}&=\frac{\mathrm{E}_{p_1^*}[\pi_1(\xi)/q_1^*(\xi)]\mathrm{E}_{p_2^*}[\pi_2(\xi)/q_2^*(\xi)]}{\mathrm{E}_{p_0}[\pi_0(\xi)/q_{0}(\xi)]\mathrm{E}_{p_3^*}[\pi_3(\xi)/q_3^*(\xi)]}
+\end{align}Each estimate of the components of $r^*$ will be reused across various combinations $(j,m)$ therefore we can afford to spend large amounts of simulation draws to estimate them. The formulation (\ref{r_tilde_is}) is more appealing than (\ref{r_is}) because it involves only likelihood calculations which are sometimes amenable to approximations that are faster to compute.
+
+%\subsection{Bridge sampling}
+%As already noted, the estimator for $(\ref{r_tilde_is_2})$ is convenient. Also, it's performance depends on the variability of $L_l(.)/L_l^*(.)$. Rather than spend resources on finding sampling schemes to correct for the variability of $L_3(.)/L_3^*(.)$, it seems more straightforward to ensure that the latter be kept low in the first place, which is the topic of Section . Therefore, our focus is on an alternative formulation to $(\ref{r_star_is_2})$, for example: 
+%\begin{align}
+%r^*_{\mathrm{BS}}=\frac{\mathrm{E}_{p_1^*}[L_2^*(\xi)\alpha_1(\xi)]\mathrm{E}_{p_2^*}[L_1^*(\xi)\alpha_2(\xi)]}{\mathrm{E}_{p_0}[L_3^*(\xi)\alpha_1(\xi)]\mathrm{E}_{p_0}[L_3^*(\xi)\alpha_2(\xi)]}
+%\end{align}which follows from $p_1^*(\xi)L_2(\xi)\alpha_1(\xi)=\frac{p_0(\xi)L_1^*(\xi)}{\zeta_1}L_2^*(\xi)\alpha_1(\xi)=\frac{\zeta_3}{\zeta_1}\frac{p_0(\xi)L_3^*(\xi)}{\zeta_3}\alpha_1(\xi)=\frac{\zeta_3}{\zeta_1}p_3^*(\xi)\alpha_1(\xi)$.
+\subsection{RIS}
+We now consider a ratio importance sampling formulation and $p_{1,2}^*(.)$, an arbitrary distribution of the form $p_{1,2}^*(\xi)=p_0(\xi)L_{1,2}(\xi)/\zeta_{1,2}^*$. Define
+\begin{align}
+\tilde{r}_{\mathrm{R}}=\frac{\mathrm{E}_{p_{1,2}^*}[L_{1}(\xi)L_{2}(\xi)/L_{1}^*(\xi)]}{\mathrm{E}_{p_{1,2}^*}[L_{1}(\xi)/L_{1,2}^*(\xi)]\mathrm{E}_{p_{1,2}^*}[L_{2}(\xi)/L_{1,2}^*(\xi)]}
+\end{align}and note that $r=\tilde{r}_{\mathrm{R}}\times \zeta_{1,2}^*$. The advantage of this formulation is that if the same sample $\{\xi^k\}_{k=1}^{k_*}\stackrel{\mathrm{iid}}{\sim} p_{1,2}(\xi)$ is used for estimating each expectation, we can reuse the integrands in the denominator to compute the numerator. The price, however, is that we have to determine the optimal $p_{1,2}^*$ for each combination of clusters $(c_i,c_{i+1})$. Again, this cost can be amortized over all combination of data points $(\mathbf{y}_i^j,\mathbf{y}_{i+1}^m)$ which map to $(c_i,c_{i+1})$.
+
+
+
+
+
+

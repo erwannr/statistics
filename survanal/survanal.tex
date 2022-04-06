@@ -13,7 +13,7 @@ bibencoding=auto
 %\newcounter{res}
 %\newtheorem{result}[res]{Result}
 %\usepackage{filecontents}
-\addbibresource{\jobname.bib}% syntax for version >= 1.2
+\addbibresource{../rogard.bib}% syntax for version >= 1.2
 \usepackage{hyperref}
 \ProvideDocumentCommand{\docfillblank}{}{\begin{minipage}[t]{\linewidth}\end{minipage}}
 \ProvideDocumentCommand{\origDate}{}{\DTMdate{2007-05-14}}
@@ -133,7 +133,7 @@ bibencoding=auto
 \newcommand{\survcoxloglikcox}{\sum_n \isfail_\nentry(t) \left(\survfullcov'_\nentry\survfulleffect-\log\left(\sum_l  \atrisk_l(t,\tfail_\nentry) \exp(x'_\nentry\survfulleffect)\right)\right)
 }
 
-\title{Notes on survival analysis}
+\title{Notes on survival analysis\footnote{Revisions: \url{https://github.com/erwannr/statistics/commits/main/survanal}}}
 \author{Erwann Rogard}
 \date{\ThisDate}
 
@@ -141,7 +141,7 @@ bibencoding=auto
 
 \maketitle
 
-\begin{abstract}These are renovated notes from 2007. Some parts are commented out in the source file until I get a grasp of what I was up to.\end{abstract}
+\begin{abstract}This is a slighly revised version of a cheatsheet on survival analysis dated \DTMdate{2007-05-14}.\end{abstract}
 
 \section{Conventions}
 The most general framework that we will consider is that of staggered entry, static covariate and right censoring.  Let's begin with the following definitions
@@ -255,25 +255,6 @@ Formulations that are intermediary between the fully parameterized version of $L
 %From the distributional properties of $\carlindatapoint$ stated above, and in view of (\ref{coxscore2}), (\ref{coxinfo2}) and (\ref{coxscorescaledapproxdist}-\ref{coxscorescaledapproxdist2}), we conjecture that what \cite{1998Carlin} calls a datapoint, and its variance parameter assumed to be known, are, for some choice of $\treateffect_*$,  \begin{align}\carlindatapoint_{\interim}|\treateffect&=(\coxinfo(t_{\interim}|\treateffect_*)-\coxinfo(t_{\interim-1}|\treateffect_*))^{-1}(\coxscore(t_{\interim}|\treateffect)-\coxscore(t_{\interim-1}|\treateffect))\\
 %\carlindatapointsd_\interim^2&=(\coxinfo(t_{\interim}|\treateffect_*)-\coxinfo(t_{\interim-1}|\treateffect_*))^{-1}
 %\end{align}
-
-\section*{Revisions}
-
-The commits referred to are at \url{https://github.com/erwannr/statistics/survanal/survanal.tex}\par
-
-\medskip
-
-\noindent
-\begin{tabular}
-  {@{\extracolsep{0mm}}
-  p{0.15\textwidth}
-  @{\extracolsep{1em}}
-  p{0.7\textwidth}
-  @{\extracolsep{1em}}
-  p{0.1\textwidth}@{\extracolsep{0mm}}}
-Date & Comment & Commit\\
-\DTMdate{2007-05-14} & First version; section of a larger document & \texttt{3811ec4}\\
-\DTMdate{2022-04-04} & Added headers and bibliography; commented out some parts & \texttt{}
-\end{tabular}
                          
 \section*{Bibliography}
 \printbibliography[heading=none]

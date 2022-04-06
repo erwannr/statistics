@@ -1,0 +1,1143 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathrsfs}
+\usepackage{algorithmic}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{euscript}
+\usepackage{vmargin}
+\usepackage[dvips]{epsfig}
+\usepackage{pst-tree}
+\usepackage{psfrag}
+%\usepackage{notebook2e}
+%\usepackage{lcaption}
+
+\setpapersize{USletter}
+\setmarginsrb{2.5cm}{2.5cm}{2.5cm}{1.75cm}{0pt}{0mm}{0pt}{0.70cm}
+
+%Array
+\setlength{\tabcolsep}{30pt}
+\renewcommand{\arraystretch}{1.2}
+
+% Lcaption
+%\smartcap
+%\CapSize=4.5in
+
+% Float Control
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{.95}
+
+
+%\title
+%{Toy problem...}
+%\author{}
+\begin{document}
+%\maketitle
+\begin{abstract}
+We revisit the Bayesian sequential clinical trial problem of Carlin
+et al. (1998) proposing efficient simulation schemes for finding the
+optimal parameters of the continuation region (equivalently stopping
+rule).
+\end{abstract}
+
+\section{Introduction}
+In Section 2, we introduce the problem formulation for a simple
+model and utility framework, starting from the intuitive (but
+practically not recommended) Bellman recursion, and translating it
+into a parametric stopping rule (SR) approach, which is the focus of
+our study.
+
+Under SR we have to maximize an expected utility over decision
+boundaries  that have a parametric representation. Without a closed
+form for the expected utility, it has to be approximated from
+simulation samples. Stochastic optimization methods are therefore
+considered.
+
+In general, for this type of problem, there is no straightforward
+``interchange of differentiation and expectation'' formula that
+would allow to incorporate derivative information into the algorithm
+directly. To address this issue, in Section 3, we present a finite
+difference approach to the problem, namely the Kiefer--Wolfowitz
+algorithm. The challenge, here, is variance reduction, as the use of
+finite difference induces a particular ``importance region''. In
+Section 4, we re--express the gradient as a multidimensional
+integral restricted to a hypercube region of the space. By treating
+the integrand times the indicator for the hypercube as an
+un--normalized density, the problem becomes amenable to importance
+sampling or MCMC.
+
+In Section 5, we consider more realistic models, implying more
+complicated and unknown policy spaces.
+
+In Section 6, we address convergence issues from a theoretical
+standpoint, and bridge our work with established sequential trials'
+methods/ and or an application
+\section{Problem formulation}
+Consider a sequential clinical trial extending over a maximum of $n$
+periods to assess the effect $\theta$ of a treatment, $T$, in
+comparison to the placebo, $P$. Suppose that at period $i$, $0\leq
+i\leq n$, we have accumulated data $\mathbf{y}_i=(y_0,\ldots,y_i)$,
+with $y_0$ as prior. In this situation, our action space is
+$\mathcal{A}=\{T,P,C\}$, where $C$ means continue to $i+1$, which
+incurs a sampling cost $c_{i+1}$. Let
+$\mathbf{a}_i=\{a_j\}_{j=0}^{i}$ denote the sequence of actions up
+to period $i$. For that period, our utility (or negative loss) is
+\begin{eqnarray}\label{util}
+u(i,\theta,a)&=&\left\{
+\begin{array}{ll}
+-c_{i,T}(c_P-\theta)^{+}-c_j,& a=T\\
+-c_{i,P}(\theta-c_T)^{+}-c_j,&
+a=P\\
+-\infty 1\{i=n\},& a=C
+\end{array}\right.
+\end{eqnarray}where the $c_{i,a}$'s denote penalties, and
+$[c_P,c_T]$ an indifference zone. The cost of forming the prior,
+$c_0$, does not affect the subsequent decisions, so we assume
+$c_0=0$. If we know that $a_{i-1}=C$ and $a_i\neq C$, then the
+relevant action space at period $i$ is
+$\mathcal{A}^{\mathrm{s}}=\{T,P\}$, and for $j>i$,
+$\mathcal{A}_{j}=\{\varnothing\}$ and $u(j,\theta,\varnothing)=0$.
+The utility up to period $i$ is
+$u(\theta,\mathbf{a}_i)=\sum_{j=0}^{i}\beta^{j}u(j,\theta,a_j)$
+where $0\leq\beta\leq 1$ is a discount factor. For now we assume
+$\beta=1$.
+
+%say why this is a MDP
+
+Our problem is to characterize a policy,
+$a:\boldsymbol{\mathcal{Y}}_i\rightarrow\mathcal{A}$, which
+maximizes the expected utility. Let
+$u(\mathbf{y}_i,a)=\mathrm{E}[u(\theta,\mathbf{a}_{i})|\mathbf{y}_i,a_{i-1}=C,a_{i}\neq
+C]$. Within this restricted action space, we have to solve $
+\max_{a\in\mathcal{A}^{\mathrm{s}}} u(\mathbf{y}_i,a)$, whose
+expected utility and solution we denote $u(\mathbf{y}_i)$ and
+$a^{\mathrm{s}}(\mathbf{y}_i)$, respectively.
+
+We will first study the model
+\begin{equation}
+\label{normal_normal} p(\theta,\mathbf{y}_{n}) =
+N(\theta|\mu,\sigma_0)\Pi_{i=1}^{n} N(y_i|\theta,\sigma_i)
+\end{equation}where $\mu,\sigma_0,...,\sigma_{n}$ are given
+parameters. Under this model, the policy for
+$\mathcal{A}^{\mathrm{s}}$ has a simple characterization:
+\begin{eqnarray}\label{T_or_P}a^{\mathrm{s}}(\mathbf{y}_i)=\mathrm{T}
+\Leftrightarrow \mu(\mathbf{y}_{i})\geq \mu_i\end{eqnarray}where
+$\mu_i=\frac{c_{i,T}c_{P}-c_{i,P}c_{T}}{c_{i,T}+c_{i,P}}$ and
+$\mu(\mathbf{y}_i)=E[\theta|\mathbf{y}_i]$.
+
+The sequential problem is characterized by the Bellman recursion
+(BR):
+\begin{eqnarray}\label{BR_terminal}
+u_*(\mathbf{y}_{n}) &=& u(\mathbf{y}_{n})\\
+\label{BR_cont}
+\upsilon(\mathbf{y}_i)&=&\mathrm{E}[u_*(\mathbf{y}_{i+1})|\mathbf{y}_i]\\
+\label{BR_opt}
+u_*(\mathbf{y}_i)&=&\max(u(\mathbf{y}_i),\upsilon(\mathbf{y}_i))
+\end{eqnarray}for $i=i_{\max-1},...,0$, where $\upsilon(\mathbf{y}_i)$ and
+$u_*(\mathbf{y}_{i+1})$ are the expected utility, from moving to
+$i+1$ (and pursuing an optimal strategy thereafter), and from making
+the overall best decision. Clearly,
+$u_*(\mathbf{y}_i)=\upsilon(\mathbf{y}_i)\Rightarrow
+a(\mathbf{y}_i)=C$, otherwise,
+$a(\mathbf{y}_i)=a^{\mathrm{s}}(\mathbf{y}_i)$.
+
+The above problem is solved in two steps: \theoremstyle{definition}
+\newtheorem{algorithm}{Algorithm}
+\begin{algorithm}[BR]\label{alg:BR}
+\hfill\par
+\begin{enumerate}\item Fix $m$, and starting from
+$\mathbf{y}_0$, apply the recursion $y_{i+1}^{j_1,...,j_{i},j_{i+1}}
+\stackrel{\mathrm{iid}}{\sim}
+p(y_{i+1}|\mathbf{y}_i^{j_1,...,j_{i}})$, $j_{i+1}=1,...,m$, $0\leq
+i<n$, resulting in a tree structure rooted at $\mathbf{y}_0$ and
+$m^{n}$ terminal nodes
+\item At all the nodes at $i=n$ compute (\ref{BR_terminal}) and for every other node,
+in the order $i=n-1,...,0$ compute (\ref{BR_cont}--\ref{BR_opt})with
+(\ref{BR_cont}) approximated as follows:
+\begin{align}\label{BR_est_upsilon}
+\hat\upsilon(\mathbf{y}_i^{j_1,...,j_i})=\frac{1}{m} \sum_{j=1}^m
+\hat u_*(\mathbf{y}_{i+1}^{j_1,...,j_i,j})
+\end{align}
+\end{enumerate}
+\end{algorithm}
+
+The above method has the following characteristic:
+\begin{enumerate}
+\item The simulated tree implies a computational demand exponential in $n$
+\item The relevant distribution, at each node, is the predictive
+density i.e. $p(y_{i+1}|\mathbf{y}_{i})$.
+\item A trivial optimization problem, (\ref{BR_opt}), is solved at each node of the
+simulated tree
+\item The method is independent of the problem's structure (model and loss)
+\item The bias of (\ref{BR_est_upsilon}) is positive for finite $m$,
+and zero in the limit as $m\rightarrow \infty$
+\end{enumerate}In the iid case,
+$p(y_{i+1}|\mathbf{y}_{i})=\mathrm{E}[p(y_{i+1}|\theta)|\mathbf{y}_{i}]$
+which in general is not easy to sample.
+
+The first characteristic means that algorithm (\ref{alg:BR}) is
+impractical beyond 2 or 3 periods. However, the memory requirement
+can be made linear in $n$ by depth first processing:
+%\begin{algorithm}[BR--DF]\label{alg:BR--DF}
+%\hfill\par
+%\begin{enumerate}
+%\item Define \\$\upsilon(\mathbf{y},i,n,m)\{\\u\leftarrow u(\mathbf{y}_i);\\
+%\mathrm{for}(j=1\quad \mathrm{to}\quad m)\{\\\mathrm{generate}\quad
+%\mathbf{y}^j\sim p(\mathbf{y}^j|\mathbf{y}_i)\}\\\}$
+%\end{enumerate}
+%\end{algorithm}
+\subsection{independent paths alternative}
+To remedy the first limitation of algorithm \ref{alg:BR} we would
+like replace the simulated tree in the first tree by independent
+paths and correct with importance sampling. Consider the formulation
+of (\ref{BR_cont}) as
+\begin{eqnarray}\label{BR_cont_alt_1}
+\mathrm{E}[u_{*}(\mathbf{y}_{i+1})|\mathbf{y}_{i}]
+&=\mathrm{E}_*[u_{*}(\mathbf{y}_{i+1}^*)\frac{p(\mathbf{y}_{i+1}^*|\mathbf{y}_{i}^*=\mathbf{y}_{i})}{p(\mathbf{y}_{i+1}^*)}]\\\label{BR_cont_alt_2}&=
+\mathrm{E}_*[u_{*}(\mathbf{y}_{i+1}^*)\frac{p(\mathbf{y}_{i+1}^*|\mathbf{y}_i^*=\mathbf{y}_i)}{\mathrm{E}_{**}[p(\mathbf{y}_{i+1}^*|\mathbf{y}_{i}^{**}=\mathbf{y}_{i}^*)]}]
+\end{eqnarray}where $\mathbf{y}_i^*$ indicates a variable
+independent of $\mathbf{y}_i$ but with the same distribution. In
+order for the above to make sense, we have to take $\mathbf{y}_i$ as
+meaning the sufficient statistic for $\theta$ of the data
+accumulated up to period $i$, and assume\footnote{see Glasserman,
+2000, Section 8.5.1 for all conditions}
+\begin{align}\label{mesh_cond_1}p(\mathbf{y}_{i+1}|\mathbf{y}_{i-1},...,\mathbf{y}_{1})=p(\mathbf{y}_{i+1}|\mathbf{y}_{i-1}).\end{align}
+The new procedure is:
+\begin{algorithm}[BR--IS]\label{alg:BR_IS}
+\hfill\par
+\begin{enumerate}
+\item Simulate $m$ iid paths with transition
+$p(\mathbf{y}_{i+1}|\mathbf{y}_{i}), \quad i=0,...,n-1$
+\item At all the nodes at $i=n$ compute
+(\ref{BR_terminal}) and for every other node, in the order
+$i=n-1,...,0$ compute (\ref{BR_cont}--\ref{BR_opt}) with the
+(\ref{BR_cont}) approximated as follows:
+\begin{align}\label{BR_IS_est_upsilon}
+\hat\upsilon(\mathbf{y}_i^{j})&=\frac{1}{m} \sum_{k=1}^m
+w(\mathbf{y}_{i+1}^k|\mathbf{y}_{i}^j)\hat u_*(\mathbf{y}_{i+1}^{k})
+\end{align}and the importance weights computed as either of the two
+forms\footnote{see the discussion of Glasserman, 2000, Section 8.5.2
+for a discussion of the superiority of the second form}:
+\begin{align}
+w(\mathbf{y}_{i+1}^k|\mathbf{y}_{i}^j)&=\frac{p(\mathbf{y}_{i+1}^k|\mathbf{y}_{i}^j)}{p(\mathbf{y}_{i+1}^k)}\\
+w(\mathbf{y}_{i+1}^k|\mathbf{y}_{i}^j)&=\frac{p(\mathbf{y}_{i+1}^k|\mathbf{y}_{i}^j)}{\frac{1}{m}\sum_{l=1}^m
+p(\mathbf{y}_{i+1}^k|\mathbf{y}_{i}^l)}
+\end{align}
+\end{enumerate}
+\end{algorithm}
+\subsection{stopping rule formulation}
+We define
+\begin{align}\label{tau_*}
+\tau_*\triangleq\min\{i: u(\mathbf{y}_i)>\upsilon(\mathbf{y}_i)\}
+\end{align}and $u(\theta,\mathbf{y}_i)\triangleq
+u(i,\theta,a(\mathbf{y}_i))$. In view of (\ref{BR_terminal}),
+(\ref{BR_cont}) and (\ref{BR_opt}),
+$v(\mathbf{y}_i)=\mathrm{E}[u(\theta,\mathbf{y}_{\tau_*})|\mathbf{y}_i]$,
+and in particular,
+\begin{eqnarray}\label{opt_cont}
+\upsilon\triangleq\upsilon(\mathbf{y}_0)=\mathrm{E}[u(\theta,\mathbf{y}_{\tau_*})]
+\end{eqnarray}where $\mathrm{E}[.]$ is understood as conditioning on
+$\mathbf{y}_0$ to alleviate subsequent notation. With the above
+stopping rule, a given path $\mathbf{y}$ is either stopped before
+$i$, at $i$ or beyond $i$. This defines a partition
+$\boldsymbol{\mathcal{Y}}_i=\mathbf{C}_{i-1}^{\mathrm{c}}\cup\mathbf{S}_i
+\cup \mathbf{C}_i$. The relationships between these sets are
+$\mathbf{C}_i=\mathbf{C}_{i-1}\cup C_{i}$, for $i=1,...,n-1$,
+$\mathbf{C}_0=C_{0}$ and $\mathbf{S}_i=\mathbf{C}_{i-1}\cap
+C_{i-1}^{\mathrm{c}}$ where
+%and partition the space $\boldsymbol{\mathcal{Y}}_i$ as:
+%\begin{align}
+%\mathbf{T}_i & =\{\mathbf{y}_i: a(\mathbf{y}_j)=C,j<i\quad \mathrm{and}\quad a(\mathbf{y}_i)=T\}\\
+%\mathbf{P}_i & =\{\mathbf{y}_i: a(\mathbf{y}_j)=C,j<i\quad \mathrm{and}\quad a(\mathbf{y}_i)=P\}\\
+%\mathbf{C}_i & =\{\mathbf{y}_i: a(\mathbf{y}_j)=C,j\leq i\}\\
+%\mathbf{C}_{i-1}^{\mathrm{c}} & =\{\mathbf{y}_i: a(\mathbf{y}_j)\neq
+%C,j<i\}
+%\end{align}Using the above, recursively for $j=i-1,...,1$,
+%we get the finer partition:
+%\begin{align}
+%\boldsymbol{\mathcal{Y}}_i=\mathbf{T}_1 \cup \mathbf{P}_1...\cup
+%\mathbf{T}_i \cup \mathbf{P}_i \cup \mathbf{C}_i
+%\end{align}In view of (\ref{BR_terminal}), (\ref{BR_cont}) and (\ref{BR_opt}),
+\begin{align}\label{C_i} C_i &=\{\mathbf{y}_{i}:
+\upsilon(\mathbf{y}_i)>u(\mathbf{y}_i)\}, \quad
+i=0,...,n-1\\\label{C_0} C_{n}&=\{\emptyset\}
+\end{align}
+We can estimate the stopping rule as follows. Suppose have generated
+$j=1,...,m$ paths and computed
+$(u(\mathbf{y}_i^j),\hat\upsilon(\mathbf{y}_i^j))$ by BR--IS, for
+each node $(i,j)$. For any given $\mathbf{y}_i^*$, independent of
+the previous draws, we can estimate $\upsilon(\mathbf{y}_i^*)$ by
+plugging $\mathbf{y}_i^*$ in place of $\mathbf{y}_i^j$ into
+(\ref{BR_IS_est_upsilon}). By plugging the estimate,
+$\hat\upsilon(\mathbf{y}_i^*)$, into (\ref{tau_*}) results in an
+estimate $\hat\tau$. By plugging $\hat\tau$ in place of $\tau_*$ in
+(\ref{opt_cont}) we obtain:
+\begin{align}\label{BR_IS_est_upsilon_neg}
+\upsilon(\hat \tau)&\triangleq
+\mathrm{E}[u(\theta,\mathbf{y}_{\hat\tau})]\\&< \upsilon
+\end{align}As we recall the BR estimator (and therefore the
+BR--IS) of $\upsilon$ a positive bias, whereas
+(\ref{BR_IS_est_upsilon_neg}) has a negative bias. By combining the
+two estimators, we can therefore obtain an interval which contains
+the true value $\upsilon$ for a given confidence level.
+\section{Parametric decision boundaries}
+The second way to estimate the stopping rule is to model it. Let
+$C=(C_1,...,C_{n-1})$ and suppose we postulate $\mathbf{C}:\Gamma
+\rightarrow\boldsymbol{\mathcal{Y}}^{n-1}$. As we saw, the
+continuation regions determine the stopping rule, which in turn
+determines a continuation value:\begin{align}
+\tau(\gamma)&=\min\{i: \mathbf{y}_i \notin C_i(\gamma)\}\\
+\label{upsilon_par_sr} \upsilon(\gamma)&=
+\mathrm{E}[u(\theta,\mathbf{y}_{\tau(\gamma)})]
+\end{align}Our objective is now the maximization of
+(\ref{upsilon_par_sr}). Clearly, we should expect
+ \begin{align}\label{sup_upsilon_par_sr}
+\sup_{\gamma\in\Gamma} \upsilon(\gamma)\leq \upsilon
+\end{align}
+Recalling the characteristics of BR at the end of the previous
+Section, let us now contrast them with those of SR:
+\begin{enumerate}
+\item Estimating the expectation in (\ref{upsilon_par_sr}) requires parallel
+paths
+\item The relevant distribution is $p(\theta,\mathbf{y}_{\tau})$
+\item We have to optimize over all entries of $\gamma$ simultaneously.
+% make this more explicit
+\item The structure of the optimization problem depends on the
+distribution and utility under consideration
+\end{enumerate}Assuming iid data
+$p(\theta,\mathbf{y}_\tau)=p(\theta)\Pi_{j=1}^{\tau}p(y_j)$, so it
+is essential that $p(\theta)$ be ``proper'' for sampling purposes.
+Practically, this often means restricting the search to conjugate
+priors, or otherwise incorporating some actual data into the prior
+(see Gelman et al., Section 4.3).
+
+Under (\ref{util}) and (\ref{normal_normal}), Carlin et al. (1998)
+have derived the true model, i.e. that which achieves equality for
+(\ref{sup_upsilon_par_sr}). It is characterized as follows:
+\begin{align}\label{gamma}
+\gamma&=(\gamma_1,...,\gamma_{2(n-1)})\\
+\label{C_i_param} C_{i}(\gamma)&= \{\mathbf{y}_i:
+\gamma_{i}^{-}\leq\mu(\mathbf{y}_{i})\leq \gamma_{i}^{+}\}, \quad
+1\leq i\leq n-1\\\label{Gamma} \Gamma&=\{\gamma: \gamma_k \in
+\mathbb{R}, \gamma_i^{-}\leq \mu_i \leq\gamma_i^{+}\}
+\end{align} where $\gamma_{i}^{-}\triangleq\gamma_{2(i-1)+1}$,
+$\gamma_{i}^{+}\triangleq \gamma_{2i}$. We define $i(k)=\lfloor k+1
+\rfloor/2$.
+
+From (\ref{gamma}--\ref{Gamma}), and recalling (\ref{T_or_P}), we
+see that $\mu(\mathbf{y}_{i})$ summarizes the observable state
+variables. Moreover, $\mu(\mathbf{y}_i)=\mathbf{s}_i
+\mu(\mathbf{y}_{i-1})+(1-\mathbf{s}_i)y_{i+1}$ with
+$\mu(\mathbf{y}_0)=\mu$ and $y_{i+1}=\theta+\epsilon_{i+1}$ so that
+conditional on $\theta$, $\{\mu(\mathbf{y}_i)\}_{i=0}^{n}$ evolves
+as a Markov chain.
+\subsection{The optimization problem}
+The algorithms that we will consider to solve
+(\ref{sup_upsilon_par_sr}) start from an initial guess
+$\gamma^{(0)}$, and update it in an iterative fashion so as maximize
+a local approximation to (\ref{upsilon_par_sr}):
+\begin{eqnarray}\label{KW}
+\gamma^{(b+1)}&=&\mathrm{Proj}_{\Gamma}(\gamma^{(b)}-\alpha^{(b)}
+{H^{(b)}}^{-1}\widehat{\nabla}^{(b)} \upsilon)
+%\\
+%\label{SFD} \nabla_{\mathrm{\scriptscriptstyle FD}}^{(b)}
+%v_{\mathrm{sim}} &=&\{
+%\frac{1}{h_{k}^{(b)}}(v_{\mathrm{sim}}(\gamma^{(b)}+e_{k}h_{k}^{(b)})-v_{\mathrm{sim}}(\gamma^{(b)}))\}_{k=1}^{\mathrm{dim}(\Gamma)}
+\end{eqnarray}where
+%$v_{\mathrm{sim}}(.)$ replaces $\mathrm{E}[.]$
+%in (\ref{upsilon_par_sr}) by the average over $n$ simulation draws (an
+%independent sample for each $b$).
+$\alpha^{(b)}$, $H^{(b)}$, are the step size, and scaling matrix
+(ideally the the hessian). We will consider different ways to
+compute $\widehat{\nabla} \upsilon^{(b)} \approx \nabla
+\upsilon(\gamma^{(b)})$ using averages over simulation samples. The
+particular distribution that we choose for $\widehat{\nabla}
+\upsilon$ at iteration $(b)$, say $d$, induces a distribution, say
+$d$ for $\gamma^{(b+1)}$. Our objective, therefore, can be expressed
+as
+\begin{equation}
+\min_d \mathrm{E}_d[||\gamma_*^{(b+1)}-\gamma^{(b+1)}||]
+\end{equation}where $\gamma_*^{(b+1)}$ is optimal in some sense, for
+example the solution of (\ref{KW}) assuming perfect knowledge of
+$\nabla_2 \upsilon(.)$ and $\nabla \upsilon(.)$ \footnote{In this
+case, $\Delta_q=\mathrm{E}_q[||\nabla_2^{-1}
+\upsilon(\gamma^{(b)})\nabla
+\upsilon(\gamma^{(b)})-{H^{(b)}}^{-1}\widehat\nabla^{(b)}\upsilon_{\mathrm{sim}}||]$}.
+This expression is intricate. A reasonable intermediary objective,
+however, is the minimization of
+\begin{equation}\label{gradient_distance}
+\Delta_d^{(b)} = \mathrm{E}_d[||\nabla
+\upsilon(\gamma^{(b)})-\widehat\nabla^{(b)} \upsilon||]
+\end{equation}(TODO: what norm is appropriate? $||.||_{H^{-1}}$?)
+
+Consider the following decomposition:
+\begin{align}\label{upsilon_par_sr_i}
+\upsilon(\boldsymbol{\gamma}_i)&=\mathrm{E}[u(\theta,\mathbf{y}_i)1\{\tau(\gamma)=i\}]\\
+\label{upsilon_par_sr_decomp} \upsilon(\gamma)
+&=\upsilon(\boldsymbol{\gamma}_1)+...+\upsilon(\boldsymbol{\gamma}_{n-1})
+\end{align}where
+$\boldsymbol{\gamma}_i=\{\gamma_k\}_{k=1}^{2i}$. Under
+(\ref{upsilon_par_sr}), the quantity (\ref{upsilon_par_sr_i}) has
+the representation
+\begin{equation}\label{upsilon_par_sr_i_integral}
+\upsilon(\boldsymbol{\gamma}_i)=-\mathbf{c}_{i-1}+\int_{\mathbb{R}}\idotsint\limits_{\mathbf{R}_{i-1}}\Bigl[\int_{-\infty}^{\gamma_i^{-}}u(i,\theta,T)p(\theta,\mathbf{y}_{i})
+d
+y_i+\int_{\gamma_i^{+}}^{\infty}u(i,\theta,P)p(\theta,\mathbf{y}_{i})d
+y_i\Bigr]d \mathbf{y}_{i-1}  d \theta
+\end{equation}with $\gamma_{n}^{\pm}=\mu_{n}$ and $\mathbf{c}_i=\sum_{j=1}^{i}
+c_j$. Let
+\begin{equation}\Upsilon(\boldsymbol{\gamma}_i)=\boldsymbol{1}\{\mathbf{y}_{i-1}\in
+\mathbf{R}_{i-1}, \}(\boldsymbol{1}\{\mu(\mathbf{y}_i)\leq
+\gamma_{i}^{-}\}u(i,\theta,T)+\boldsymbol{1}\{\mu(\mathbf{y}_i)\geq
+\gamma_{i}^{+}\}u(i,\theta,P))p(\theta,\mathbf{y}_{i})\end{equation}we
+have
+$\upsilon(\boldsymbol{\gamma}_i)=\mathrm{E}[\Upsilon(\boldsymbol{\gamma}_i)]$.
+However, the presence of indicator functions implies $\nabla
+\upsilon(\boldsymbol{\gamma}_i)\neq
+\mathrm{E}[\nabla\Upsilon(\boldsymbol{\gamma}_i)]$, which precludes
+a pathwise simulation approximation to the derivative. To resolve
+this difficulty, we will consider two methods.
+
+The first is the finite difference method. This involves only
+evaluating (\ref{upsilon_par_sr_decomp}) at $\boldsymbol{\gamma}_i$
+and $\boldsymbol{\gamma}_i+\Delta$ for some small $\Delta$. As
+already noted, simulating from $p(\theta,\mathbf{y}_i)$ should not
+present major difficulties in the iid case. However, we are not
+interested in simulating $p(.)$, rather a truncated version of it.
+Importance sampling solutions will be proposed to improve
+efficiency.
+
+The second method is to take partial derivatives of
+(\ref{upsilon_par_sr_i_integral}) with respect to $\gamma_j$. The
+resulting expression is no longer an expectation with respect to a
+well defined distribution. However, we can treat this expression as
+a un un--normalized density, and since it can be evaluated, the
+problem amenable to importance sampling or Markov chain simulation.
+\section{Method 1}
+\subsection{Procedure}
+We now take $\widehat\nabla \upsilon$ to be a simulation
+approximation to finite difference gradient,
+$\widehat{\nabla}_{\mathrm{\scriptscriptstyle FD}} \upsilon$. In
+this case, the recursion (\ref{KW}) is due to Kiefer--Wolfowitz. Let
+us start from the classic finite difference expression for
+$\nabla_{\mathrm{\scriptscriptstyle FD}} \upsilon$. Fix $(b)$, so
+that $\tau=\tau(\gamma^{(b)})$, and define $\tau_k=\tau(\gamma+e_k
+h_k)$. Throughout, we will assume a sequential importance form for
+the finite difference gradient:
+\begin{equation}\label{nabla_FD_IS}
+\nabla_{\mathrm{\scriptscriptstyle FD}}v=\mathrm{E}_q[(w\times
+\nabla_{\mathrm{\scriptscriptstyle FD}}
+u)(\theta,\mathbf{y}_{\tau})]
+\end{equation}
+The $k^{\mathrm{th}}$ element of the integrand is
+\begin{equation}\label{FD_u}
+(w\times \nabla_\mathrm{\scriptscriptstyle FD}
+u(\theta,\mathbf{y}_{\tau}))_k=\frac{(w\times
+u)(\theta,\mathbf{y}_{\tau_k})-(w\times
+u)(\theta,\mathbf{y}_{\tau})}{h_k}
+\end{equation}where, $q(.)$ is a distribution of our
+choice within the class $q\gg p$,
+$w(\theta,\mathbf{y}_{\tau})=p(\theta,\mathbf{y}_{\tau})/q(\theta,\mathbf{y}_{\tau})$,
+and $\times$ is the product operator i.e. $(f\times g)(.)=f(.)g(.)$.
+The resulting expression for (\ref{nabla_FD_IS}) will equal $\nabla
+\upsilon$ plus a residual term that converges to zero as
+$||h||\rightarrow 0$ where $h=(h_1,\ldots,h_{2(n-1)})$.
+
+The procedure to estimate (\ref{nabla_FD_IS}) is to sample $n$ iid
+paths from
+$q(\theta,\mathbf{y}_{\max(\tau,\tau_1,...,\tau_{2(n-1)})})$ and
+evaluate the sample average
+$\widehat{\nabla}_{\mathrm{\scriptscriptstyle FD}}
+\upsilon=\widehat{\mathrm{E}}_q[(w\times
+\nabla_{\mathrm{\scriptscriptstyle FD}}
+u)(\theta,\mathbf{y}_{\tau})]$. Each term of difference in
+(\ref{FD_u}) is evaluated with the \emph{same} path, which reduces
+variance, provided there is positive correlation between the two
+terms. For each iteration $(b)$, a new set of $n$ paths is
+simulated, which is indicated in (\ref{KW}) by the superscript$(b)$
+of $\widehat{\nabla}_{\mathrm{\scriptscriptstyle FD}}^{(b)}
+\upsilon$. This is part of the conditions for convergence and stems
+from the fact that averaging of the $\gamma^{(b)}$'s is already
+present, as in implicit in (\ref{KW}). If it is felt that the
+behavior of the algorithm is erratic, a larger value for $n$ or a
+smaller value for $\alpha^{(0)}$ is recommended.
+%It is not recommended to smooth the $\widehat{\nabla}^{(b)} \upsilon$'s across
+%past iterations (this would reduce variance and introduce additional
+%bias) or reuse past samples, because .
+
+We can weaken the above formulation to
+$w(\theta,\mathbf{y}_{\tau})\propto
+p(\theta,\mathbf{y}_{\tau})/q(\theta,\mathbf{y}_{\tau})$, with an
+arbitrary normalizing constant, which imposes the requirement that
+the sample $w$'s be normalized to one. This may be a matter of
+design (to make the sample average equivariant, see Hestenberg,
+1995) or necessity, in case either of $q(.)$ or $p(.)$'s normalizing
+constant is not known. Unbiasedness of
+$\widehat{\nabla}_{\mathrm{\scriptscriptstyle FD}} \upsilon$,
+relative to $\nabla_{\mathrm{\scriptscriptstyle FD}} \upsilon$,is
+only preserved in the limit as $n\rightarrow \infty$. If we
+explicitly need to distinguish this method from the standard one, we
+will write $\tilde w$ and $\widetilde{\mathrm{E}}_q[.]$.
+
+%Moreover, this method induces dependence between the paths, so that
+%the sample variance of the $(\tilde w \times
+%u)(\theta,\mathbf{y}_{\tau})$'s is a biased estimate of
+%$\mathrm{Var}_q[(\tilde w \times u)(\theta,\mathbf{y}_{\tau})]$; a
+%bootstrap estimate might be preferable.
+
+In view of (\ref{gradient_distance}), $\Delta_d \triangleq
+\Delta_{q,h}$ defined as
+\begin{align}
+\Delta_{q,h} &=\mathrm{E}_q[||\nabla\upsilon-\widehat\nabla
+_{\mathrm{\scriptscriptstyle FD}}^h\upsilon||]\\
+&=\mathrm{E}_q[||\nabla\upsilon-\nabla _{\mathrm{\scriptscriptstyle
+FD}}^h\upsilon||+||\widehat\nabla _{\mathrm{\scriptscriptstyle
+FD}}^h\upsilon-\nabla _{\mathrm{\scriptscriptstyle FD}}^h\upsilon||]
+\end{align}where the finite difference increment $h$ is now shown
+explicitly in superscript. One problem with minimizing this
+expression is the interaction between $q(.)$ and $h$. A first step
+towards simplification is to fix $h$, thereby fixing
+$\textsl{bias}_{}(h)=||\nabla_\mathrm{\scriptscriptstyle
+FD}^h\upsilon-\nabla\upsilon||$, and focusing on $q(.)$ to reduce
+some variance measure (TODO: define it). This approach has practical
+interest: often we have a prior belief (say from initial trials)
+about $d_k^{(0)}=||\gamma_k^{(0)}-\gamma_{k}^*||$, and it seems
+reasonable to set $h\leq \epsilon d_k^{(0)}$, say $h_k^{\max}$. In
+our own experimentation, for $q(.)=p(.)$, the value of $h$ that
+minimizes $||\nabla_\mathrm{\scriptscriptstyle
+FD}\upsilon-\nabla\upsilon||$ can be greater than $d_k^{(0)}$ than
+itself, if the curvature of $\upsilon(\gamma^{(0)})$ is small, which
+underlines the need to fix an upper bound. Our procedure for
+initializing the algorithm, therefore, \begin{enumerate}\item decide
+on a appropriate value for $h_{\max}$ \item solve $\min_q
+\Delta_{q,h_{\max}}$, yielding $q_*$ \item fine tune the finite
+difference increment, $\min_{h\leq
+h^{\max}}\Delta_{q_*,h}$.\end{enumerate} It may be possible to
+perform $\min_q \Delta_{q,h^{(b)}}$ throughout the course of the
+algorithm, where $\{h^{(b)}\}$ is an appropriately diminishing
+sequence but in this case a proper convergence analysis is required.
+
+The discussion that follows is also valid for variants of the finite
+difference method, with a few adjustments. In particular, if
+$\textsl{dim}(\Gamma)$ is large, it may be worthwhile perturbing all
+elements of $\gamma$ as opposed to each separately. Let
+$\tau_\epsilon=\tau(\gamma+h \epsilon)$,and
+\begin{align}\label{FD_u_SP}
+(\nabla_\mathrm{\scriptscriptstyle FD}
+u(\theta,\mathbf{y}_{\tau}))_k
+=\frac{u(\theta,\mathbf{y}_{\tau'})-u(\theta,\mathbf{y}_{\tau})}{h
+\epsilon_k}
+\end{align}where $\epsilon=\{\epsilon_k\}_{k=1}^{2(n-1)}$ is a random
+perturbation vector. This finite difference alternative is termed
+``simultaneous perturbation'' (SP). Compared with the previous
+formulation, only two evaluations of $u(.)$ are needed, a gain of to
+$2(n-1)-1$ evaluations. Under reasonable conditions, this gain more
+than offsets the loss in efficiency. Among these conditions,
+$E[|1/\epsilon_k|]\leq \infty$, which is verified for independent
+$\epsilon_k$'s distributed as $\pm 1$ Bernoulli's. The search for an
+optimal $h$ can be derived from that of the standard finite
+difference method (see Section tuning the gains parameters)
+\subsection{Importance region}
+The quantity (\ref{FD_u}) has value $0$ outside of the set
+\begin{align}
+\label{region_A}
+\mathbf{A}_k &= \{\mathbf{y}_{i(k)}: \tau \neq \tau_k\}=\mathbf{R}_{i(k)-1}\cap A_k\\
+A_k &=\{\mathbf{y}_{i(k)}:\gamma_k\leq
+\mu(\mathbf{y}_{i(k)})\leq\gamma_k+e_k h_k\}\end{align}where
+$i(k)=\lfloor k+1\rfloor/2$.
+%\begin{align}\label{p_cond_A}
+%p_k(\theta,\mathbf{y}_{n})&=p(\theta,\mathbf{y}_{n}|\mathbf{A}_k)\\
+%&= \mathbf{1}\{\mathbf{y}_{i(k)}\in \mathbf{A}_k\}
+%p(\theta,\mathbf{y}_{i(k)})/p(\mathbf{A}_k)\\\nonumber &=
+%p(\mathbf{y}_{i(k)}|\mathbf{A}_k)p(\theta|\mathbf{y}_{i(k)})p(\mathbf{y}_{i>i(k)}|\theta)
+%\end{align}
+From a computation standpoint, if we simulate along paths in a
+stepwise fashion, we may record $0$ for (\ref{FD_u}) for each $k$ as
+soon as we observe $\tau<i(k)$.
+
+From an efficiency perspective, the optimal sampling density is
+$q_*(.)\propto p(.) \times |(\nabla_{\mathrm{\scriptscriptstyle FD}}
+u)_k(.)|$. One way to get closer to this goal is to take
+$q(\theta,\mathbf{y}_{i(k)})\approx
+p(\theta,\mathbf{y}_{i(k)}|\mathbf{A}_k)$, so that
+$w(\theta,\mathbf{y}_{i(k)})\approx p(\mathbf{A}_k)$. This objective
+is all the more critical that $\lim_{b\rightarrow\infty} A_k^{(b)} =
+\{\mathbf{y}_{i(k)}:\mu(\mathbf{y}_{i(k)})=\gamma_k\}$ implying
+$\lim_{b\rightarrow\infty}p(\mathbf{A}_k^{(b)})=0$ i.e.
+$\mathbf{A}_k$ is asymptotically a rare event. Note also, that
+$\lim_{k\rightarrow\infty}p(\mathbf{A}_k^{(b)})=0$ (curse of
+dimensionality TODO: verify).
+
+If the weights are normalized, $\tilde w$, which is common in
+Bayesian analysis, the optimal density is $q_*(.)\propto p(.)
+|(\nabla_{\mathrm{\scriptscriptstyle FD}}
+u)_k(.)-(\nabla_{\mathrm{\scriptscriptstyle FD}} \upsilon)_k|$. In
+this case, we need to sample from \emph{both} $\mathbf{A}_k$ and its
+complement. Sampling within $\mathbf{A}_k$, however, remains just as
+critical and difficult.
+%compute the influence function
+
+Based on the preceding remarks, one direction is stratification,
+i.e. controlling the number of paths that fall in $\mathbf{A}_k$ and
+those falling outside (if any are needed)so that across strata
+variance --which in this case is large-- is neutralized.
+Specifically, under (\ref{normal_normal}), conditional on $\theta$,
+$\mathbf{x}_i\triangleq\mu(\mathbf{y}_{i})=\mathbf{s}_{i}\mu(\mathbf{y}_{i-1})+(1-\mathbf{s}_{i})\theta+(1-\mathbf{s}_{i})\epsilon_i$
+so there exists a vector $\mu_i$ such that
+$\mu(\mathbf{y}_{i})=\mu_i^{\mathrm{T}}\mathbf{\epsilon}_i$. Fix $k$
+and let $\tilde\gamma_{j}^{\pm}=\gamma_{j}^{\pm}$ for  $j<i(k)$,
+$\tilde\gamma_{i(k)}^{-}=\gamma_k$ and
+$\tilde\gamma_{i(k)}^{+}=\gamma_k+e_k h_k$. Then
+$\mathbf{A}_k=\{\mathbf{y}_{i(k)}:
+\tilde\gamma_{j}^{-}\leq\mu(\mathbf{y}_j)\leq\tilde\gamma_{j}^{+},
+j=1,...,i(k)\}$ which translates into a hypercube for
+$\mathbf{x}_i\sim N(\theta\boldsymbol{1}_i ,\Sigma)$. Please read
+the relevant section of the appendix. We should expect high
+correlation between the $x_i$'s and therefore sampling from
+truncated univariate normals will be inefficient. The alternative
+method is therefore highly relevant here.
+
+So far we have discussed a single $k$ in isolation, whereas the
+search for $q(.)$ should take their joint contribution into account
+(Veach and Guibas, 1995). In particular, the $\mathbf{A}_k$'s
+overlap in a non trivial way\footnote{$\mathbf{A}_{2(i-1)+1}$ and
+$\mathbf{A}_{2(i-1)+2}$ have $\mathbf{R}_{i-1}$ in common and
+$A_{k}$ and $A_{k+2}$ have $\mathrm{R}_{i(k)-1}$ in common.},
+leading to a complicated resource allocation problem. At the very
+least, however, we should expect stratification to work well when
+$\gamma$ is altered only in one direction at each step $(b)$.
+
+A second approach is to take $q(.)$ and $p(.)$ identical, except,
+for the $\theta$ portion of $(\theta,\mathbf{y}_{\tau})$, leading to
+a simple formulation for the importance ratio in the iid case:
+$w(\theta,\mathbf{y}_\tau)\propto p(\theta)/q(\theta)$. Moreover,
+there are no restrictions of the kind mentioned for stratification.
+A convenient approach, here, is to define a family of sampling
+distributions indexed by $\lambda$: $\{q_{\lambda}(.),\lambda\in
+\Lambda\}$ and select $\lambda$ to minimize some variance criterion.
+In general $p(.)$ should be incorporated into $q(.)$ as a defensive
+sampling measure (Owen and Zhou, 1998) and also to ``learn'' the
+optimal $\lambda$. Please read the relevant section in the appendix
+with $q_*(.)\propto p(.) |(\nabla_{\mathrm{\scriptscriptstyle FD}}
+u)_k(.)-c)_k|$ where $c$ is $0$ and
+$\nabla_{\mathrm{\scriptscriptstyle FD}} \upsilon$, if the weights
+$w$ and $\tilde w$ are used, respectively. In view of our previous
+discussion, we would like the minimization step to incorporate a
+constraint of the form $q_{\lambda}(\mathbf{A}_k)>\epsilon$.
+
+We should note that $\{\nabla \upsilon\}_{\mathrm{odd}}=\{(\nabla
+\upsilon)_{2(i-1)+1}\}_{i=1}^{n-1}$ and $\{\nabla
+\upsilon\}_{\mathrm{even}}=\{(\nabla
+\upsilon)_{2(i-1)+2}\}_{i=1}^{n-1}$ form two homogeneous groups in
+the following way: the expressions for each involve $a=T$ and $a=P$,
+respectively. Provided the cost structure, for either of
+$a\in\{T,P\}$, changes smoothly enough from $i$ to $i+1$, we may
+expect some positive correlation between the estimates of members of
+each group. However, a key additional assumption is required: that
+the members of $\gamma_{\mathrm{odd}}$ and $\gamma_{\mathrm{even}}$
+are also smooth along $i=1,...,{n}$. We should therefore impose this
+requirement to set the starting value $\gamma^{(0)}$. Since we can
+expect that this condition will be verified for
+$\gamma^{\infty}=\gamma_*$, provided the algorithm converges, some
+level of smoothness should be enforced for each $(b)$. Moreover,
+neighboring members of each group should be close in expectation.
+Several implications follow:
+\begin{enumerate}
+\item This suggests defining $q_\lambda(.)$ as mixture of
+distributions, one ``taking care'' of each group.
+\item For a given computational budget, particularly if
+$\beta<1$, it may be better to favor paths that stop early, as the
+later periods contribute a diminishing portion to $\upsilon$.
+Accordingly, we would set $q_{\lambda}(.)$ to meet that objective.
+TODO: define the resource allocation problem.
+\item Smoothing
+might be appropriate across neighboring $k$'s, within each of
+$\{\nabla \upsilon\}_{\mathrm{odd}}$ and $\{\nabla
+\upsilon\}_{\mathrm{even}}$ or alternatively
+$\{\gamma\}_{\mathrm{odd}}$ and $\{\gamma\}_{\mathrm{even}}$. This
+form of smoothing should ne confused with smoothing across $(b)$'s,
+which --as already mentioned-- is not valid for estimating $\nabla
+\upsilon$ as part of (\ref{KW}).
+\end{enumerate}
+
+%$\mathbf{s}_{i+1}=\boldsymbol{\sigma}_i^{-2}\boldsymbol{\sigma}_{i+1}^2$
+%and $\boldsymbol{\sigma}_i^2=(\sum_{j=0}^n \sigma_j^2)^{-1}$.
+
+%Here we suggest using a different sampling strategy for each $A_k$.
+%Convenient approximations to (\ref{p_cond_A}) are
+%\begin{eqnarray} \label{p_cond_A_approx}
+%q_{k}(\theta,\mathbf{y}_{2})&=&
+%\mathrm{unif}_{\mathrm{A}_{k}}(y_1)p(\theta|y_1)p(y_2|\theta), \quad \mathrm{or}\\
+%q_{k}(\theta,\mathbf{y}_{2})&=&
+%p(\theta)\mathrm{unif}_{\mathrm{A}_{k}}(y_1)p(y_2|\theta)
+%\end{eqnarray}with $w_{k}(\theta,\mathbf{y}_{1})=w_{k}(\theta,\mathbf{y}_{2})=\frac{p(y_1|
+%\mathrm{A}_{k})}{\mathrm{unif}_{\mathrm{A}_{k}}(y_1)}$ and
+%$w_{k}(\theta,\mathbf{y}_{1})=w_{k}(\theta,\mathbf{y}_{2})=\frac{p(y_1|\theta)/p(
+%A_{k})}{\mathrm{unif}_{\mathrm{A}_{k}}(y_1)}$, respectively.
+\subsection{Tuning the gains sequences}
+Fix $q$ and $k$. The objective, is to balance the bias and variance
+of $(\widehat{\nabla}_{\mathrm{\scriptscriptstyle FD}} \upsilon)_k$,
+as part of the system (\ref{KW}). It is a classical result that the
+system
+\begin{eqnarray}\label{alpha_seq}
+\alpha^{(b)}&=& \alpha_0/(b+1+B)^{\alpha_{\mathrm{
+\scriptscriptstyle rate}}}\\\label{h_seq} h_k^{(b)}&=&
+h_k^{0}/(b+1)^{h_{\mathrm{\scriptscriptstyle rate}}}
+\end{eqnarray}with the choice of parameters $\alpha_{\mathrm{\scriptscriptstyle rate}}=1$ and
+$h_{\mathrm{\scriptscriptstyle rate}}=1/6$, is asymptotically (in
+$b$) optimal, and yield a convergence rate for (\ref{KW}) of
+$(\alpha_{\mathrm{\scriptscriptstyle rate}}-2
+h_{\mathrm{\scriptscriptstyle rate}})/2=1/3$. As the iteration
+proceeds, taking smaller steps $h_k$ increase the variance and
+decreases the bias of $(\nabla_{\mathrm{\scriptscriptstyle
+FD}}v_{\mathrm{sim}})_k$ which is offset by the implicit averaging
+in (\ref{KW}) and the increasing damping in (\ref{alpha_seq}).
+
+The choice of $\gamma^{(0)}$, $B$, $\alpha_0$ and $h_k^{0}$ rests
+upon us. Suppose the first three are fixed; for $h_k^0$, given
+$\gamma^{(0)}=\gamma$, we suggest a value proportional to that which
+minimizes the asymptotic (in $n$) mean square error of
+(\ref{nabla_FD_IS}). This is
+\begin{eqnarray}\label{h_opt} h_k^{*} &=&
+\left(\frac{2 \sigma^2(\gamma)}{n v_{k}''(\gamma)^2}\right)^{1/3}
+\end{eqnarray}where $n$ is the simulation size, and
+$\sigma^2(\gamma)=\mathrm{Var}_{q}[(w\times
+u)(\theta,\mathbf{y}_{\tau})]$.  This takes into account the use of
+common random numbers for evaluating $(w\times
+u)(\theta,\textbf{y}_{\tau_k})$ and $(w \times
+u)(\theta,\textbf{y}_{\tau})$ in (\ref{nabla_FD_IS}). TODO: think
+about the lack of smoothness of $\nabla_{\mathrm{FD}}
+u_k(\theta,\mathbf{y}_{\tau})$ due to the fact that it is zero
+outside $\mathbf{A}_k$.
+
+We now explain how to estimate (\ref{h_opt}) from simulation data
+with a bootstrap methodology. Start with an initial guess for
+$h_k^*$, $h_k$, and update it as follows:
+\begin{algorithmic}
+\STATE $m\leftarrow 1$ \STATE $\bar\sigma^2\leftarrow 0$ \STATE
+$\bar \upsilon''_k\leftarrow 0$ \REPEAT \STATE Generate
+$s=\{(\theta,\mathbf{y}_{n})^{(j)}\}_{j=1}^n$ from
+ $q$\STATE $\hat\sigma^2\leftarrow \widehat{\mathrm{Var}}_{q}[(w\times
+u)(\theta,\mathbf{y}_{\tau})]$ \STATE $\bar\sigma^2\leftarrow
+((m-1)\bar\sigma^2+\hat\sigma^2)/m$ \STATE Compute
+$\hat\upsilon_{k}''$ by finite difference approximation with
+increment $h_k$, based on $s$ \STATE $\bar \upsilon_{k}''\leftarrow
+((m-1)\bar \upsilon_{k}''+\hat \upsilon_{k}'')/m$ \STATE
+$h_k\leftarrow h_k(\bar\sigma^2,\bar \upsilon''_{k})$ by
+(\ref{h_opt})\STATE $\hat\sigma_{ h_k}\leftarrow
+\widehat{\mathrm{Var}}[h_k]$ \STATE $m\leftarrow m+1$ \UNTIL
+$m>(\Phi^{-1}(1-\delta/2)\hat\sigma_{ h_k}/(| h_k|\epsilon))^2$
+\end{algorithmic}The if statement ensures that the error for each $k$ is less than $\epsilon$,
+with $1-\delta$ probability based on a normal approximation,
+resulting in a formula, whose parameters $h_k^*$ and $\sigma_{h_k}$
+are replaced by their estimate $h_k$ and $\hat\sigma_{h_k}$.
+
+A byproduct of the above procedure is that we can reuse the estimate
+of $\{v''(\gamma)\}_{k=1}^{2(n-1)}$ as the diagonal of $H$, provided
+it is positive definite.
+%\label{delta_opt_adaptive}
+%P(|(\bar{\xi}_{m}-\xi)/\xi|>\epsilon)<\delta\Leftrightarrow
+%m>(\Phi^{-1}(1-\delta/2)\sigma_{\hat\xi}/(|\xi|\epsilon))^2
+\section{Method 2}
+Recall (\ref{upsilon_par_sr_i}). Without loss of generality we will
+now ignore $\mathbf{c}_j$ and the upper bounds and focus on a given
+$i$:
+\begin{equation}
+\upsilon(\boldsymbol{\gamma}_i)=\int_{\mathbb{R}}\idotsint\limits_{\mathbf{R}_{i-1}}\Bigl[\int_{-\infty}^{\gamma_i}u(i,\theta,T)p(\theta,\mathbf{y}_{i})
+d y_i d \mathbf{y}_{i-1}  d \theta
+\end{equation}
+Let
+$\upsilon_j(\boldsymbol{\gamma}_i)=\partial\upsilon(\boldsymbol{\gamma}_i)/\partial{\gamma_j}
+$:
+\begin{equation}
+\upsilon_j(\boldsymbol{\gamma}_i)=\begin{cases}
+0, & j>i \\
+\int_{\mathbb{R}} \idotsint\limits_{\mathbf{R}_{i-1}}\Bigl[
+u(i,\theta,T)p(\theta,\mathbf{y}_{i-1},\gamma_i) \Bigr]
+d \mathbf{y}_{i-1}  d \theta , & j=i\\
+\int_{\mathbb{R}} \idotsint\limits_{\mathbf{R}_{i-1}}\Bigl[
+\int_{-\infty}^{\gamma_i}
+u(i,\theta,T)p(\theta,\mathbf{y}_{j-1},\gamma_j,\mathbf{y}_{j<l\leq
+i})\Bigr] d \mathbf{y}_{j-1}d \mathbf{y}_{j<l\leq i}  d \theta, &j<i
+\end{cases}
+\end{equation}
+The third equality is similar to the second, so our focus will be on
+the later:
+\begin{align}
+\upsilon_i(\boldsymbol{\gamma}_i)= \int_{\mathbb{R}}
+\idotsint\limits_{\mathbf{R}_{i-1}}\Bigl[
+u(i,\theta,T)p(\theta,\mathbf{y}_{i-1},\gamma_i) \Bigr] d
+\mathbf{y}_{i-1}  d \theta
+\end{align}Since the above quantity is bounded and $u(i,\theta,T)\geq 0$ we may
+define the density
+\begin{align}
+L(\theta,\mathbf{y}_{i-1})&=\boldsymbol{1}\{\mathbf{y}_{i-1}\in
+\mathbf{R}_i\}u(i,\theta,T)p(\theta,\mathbf{y}_{i-1},\gamma_i)/\upsilon_i(\boldsymbol{\gamma}_i)\\
+&=\boldsymbol{1}\{\mathbf{y}_{i-1}\in \mathbf{R}_i,
+\theta<\gamma_i\}\theta
+p(\theta,\mathbf{y}_{i-1},\gamma_i)/\upsilon_i(\boldsymbol{\gamma}_i)
+\end{align}
+and call $L_{\mathrm{un}}(.)$ its un--normalized version.
+Given
+$q\gg p$, the importance sampling representation for this problem
+is\begin{align}
+\mathrm{E}_q[L_{\mathrm{un}}(\theta,\mathbf{y}_{i-1})/q(\theta,\mathbf{y}_{i-1})]
+&=
+\mathrm{E}_q[L(\theta,\mathbf{y}_{i-1})/q(\theta,\mathbf{y}_{i-1})]\upsilon_j(\boldsymbol{\gamma}_i)\\
+&=\upsilon_j(\boldsymbol{\gamma}_i)
+\end{align}or,
+\begin{align}
+\mathrm{E}_q[L_{\mathrm{un}}(\theta,\mathbf{y}_{i-1})/q_{\mathrm{un}}(\theta,\mathbf{y}_{i-1})]
+&=\upsilon_j(\boldsymbol{\gamma}_i)/C_q\\
+E_q[q_{\mathrm{un}}(\theta,\mathrm{y}_{i-1})]&=C_q
+\end{align}Alternatively, we may determine a Markov chain $\{z_n, n\in
+\mathbb{N}\}$ with initial distribution $K_0$ and transition
+probabilities $\{K_n(.,.)\}_{n\in \mathbb{N}}$ which converges to
+$L(.)$ in the limit as $n\rightarrow \infty$. Specifically,
+$\eta_n(A)=\mathrm{Pr}(z_n\in A)$ is defined recursively as follows:
+\begin{align}
+\eta_0(A)\triangleq K_0(A)\\
+\eta_n(A)\triangleq \mathrm{E}_{\eta_{n-1}}[K_n(z,A)]
+\end{align}We want to find $K_0(.)$ and $\{K_n(.,.)\}_{n\in \mathbb{N}}$ such that
+$\eta_{\infty}(A)=L(A)$. Given a choice of proposal initial and
+transition distributions, $Q_0(.)$ and $Q_n(.)$, the
+Metropolis--Hastings algorithm is appropriate, and is defined by
+\begin{align}
+\alpha(z_{n-1},z)&=\min\{\frac{Q_n(z_{n-1},z)L(z)}{Q_n(z,z_{n-1})L(z_{n-1})},1\}\\
+K_n(z_{n-1},d{z_n}|z)&=\delta_{\{z\}}(z_n)\alpha(z_{n-1},z)+(1-\alpha(z_{n-1},z))\delta_{\{z_{n-1}\}}(z_n)\\
+K_n(z_{n-1},d{z_n})&=E_{Q_n}[K_n(z_{n-1},d{z_n}|z)]
+\end{align}The ratio formulation of $\alpha(.,.)$ ensures that it is
+insensitive to replacing $L(.)$ $L_{\mathrm{un}}(.)$ or $Q_n(.)$ by
+$Q_{n,\mathrm{un}}(.)$. Loosely speaking, we must ensure that
+$(Q_0,\{Q_n\}_{n\in\mathbb{N}})$ will reach all regions $A$ such
+that $\mathrm{Pr}(z \in A)>0$ from an arbitrary starting point,
+within finite time. These conditions are usually easy to meet. Our
+estimation procedure will be based on
+\begin{equation}
+E_{\eta_{\infty}}[1/L_{\mathrm{un}}(z)]=\upsilon_j(\boldsymbol{\gamma}_i)
+\end{equation}
+The difficulty in either of importance sampling or MCMC is to obtain
+reasonable convergence rates. The challenge, here is 1) to find a
+distribution that approximates $\theta
+p(\theta,\mathbf{y}_{i-1},\gamma)\propto \theta
+p(\theta,\mathbf{y}_{i-1})p(\gamma_1|\gamma)$ and 2) to sample from
+the latter on the hypercube $\boldsymbol{1}\{\mathbf{y}_{i-1}\in
+\mathbf{R}_i, \theta<\gamma_i\}$. In the case of an independence
+chain for MCMC or importance sampling, please read the relevant
+section in the appendix. In the MCMC case for random walk chain, an
+adaptive procedure to maximize the jumping distance (weighted by the
+probability of acceptance $\alpha(.,.)$) is presented in Pasarica
+and Gelman, 2005).
+
+So far, we have focused on $\upsilon_j(\boldsymbol{\gamma}_i)$ for a
+particular $(i,j)$. We have to think about an efficient way to reuse
+the sample across $(i,j)$'s.
+
+The above discussion should apply to the extended model of the next
+section (\ref{normal_normal}), after condition on $\sigma$.
+
+%Each $\partial_{\gamma_j^{\pm}}\upsilon(\boldsymbol{\gamma}_i)$ is
+%the form $\int_{\mathbb{R}}
+%\idotsint\limits_{\mathbf{R}_{i-1}}\Bigl[
+%u(i,\theta,d^{\pm})p(\theta,\mathbf{y}_{k-1},\gamma_k,\mathbf{y}_{k\leq
+%l \leq i}) \Bigr] d \mathbf{y}_{i-1}  d \theta$.
+\section{Model extensions}
+We begin by extending (\ref{normal_normal}), which relies on known
+variances to the most immediate generalization:
+\begin{align}\label{N_xi}
+\theta|\sigma^2 &\sim N(y_0,\sigma^2/\kappa_0)\\
+\sigma^2 &\sim \mathrm{Inv}-\chi(\nu_0,\sigma_0^2)
+\end{align}The parameter $\kappa_0$ can be interpreted as the number of
+prior measurements i.e. $\kappa_0+\tau$ is the total number of
+measurements under a particular stopping rule.
+
+Let us review standard properties:
+\begin{equation}
+p(\theta|\mathbf{y}_i)\sim
+t_{\nu_i}(\theta|\overline{\mathbf{y}}_i,\sigma^2(\mathbf{y}_i)/\kappa_i)
+\end{equation}where $\overline{\mathbf{y}}_i=(\kappa_0 y_0 +\sum_{j=1}^i
+y_i)/(\kappa_0+i)$, $\kappa_i=\kappa_0+i$, $\nu_i=\nu_0+i$ and
+$\nu_i\sigma^2(\mathbf{y}_i)=\nu_0\sigma_0^2+(i-1)s(\mathbf{y}_{0<j\leq
+i})^2+\frac{\kappa_0(\kappa_0+i)}{i}(\overline{\mathbf{y}}_{i}-y_0)^2$
+and $s^2(.)$ is the the sample variance.
+
+\section{Application}
+%Here we compare the performances of $p$, $q$, $q^*$ using steepest
+%descent, with $n=40$ for the first, and $n=20$ for the last two (so
+%that the three use the same \emph{total} number of simulation draws
+%for each $b$). We set the ``stabilizer'' constant $B=10$ and adjust
+%$\alpha_{0}$ via trial and error. The KW algorithm is run 20 times,
+%with a different random seed for each; we summarize the results with
+%univariate confidence intervals.
+
+%The first three Figures are the initial parameters, sequence of
+%arguments $(\gamma_{-}^{(b)},\gamma_{+}^{(b)})$, and sequence of
+%Bayes risks, $-v(\gamma^{(b)})$, starting from a point where $v(.)$
+%is ``flat'', and therefore difficult for KW. From figure 1, the
+%optimal FD increments for $p$ are much greater (by up to an order of
+%10) than those of $q$ and $q^*$, due to the greater variance of
+%$v(.)$ of the former relative to the latter. The confidence
+%intervals of $(\gamma_{-}^{(b)}, \gamma_{+}^{(b)})$ and
+%$-v(\gamma^{(b)})$ are noticeably larger for $p$ than for $q$ and
+%$q^*$. The last two, therefore, are more effective on average.
+%However, for some KW runs, the basic algorithm performs better:
+%because it is more erratic, it is also more likely to reach the
+%region of interest \emph{faster}, we think.
+
+%The last three Figures considers a region where $v(.)$ is better
+%behaved and closer to the solution.
+
+%\newpage
+%\begin{figure}          %Figure1
+%\centering
+%\includegraphics[width=4in]{C:/Documents/work/Programs/Mathematica/projects/sequential/2006_06_12_test_carlin_tableform_SIMS1_FDINIT.eps}
+%\caption{Confidence intervals for $h_{\mathrm{opt}}^{(0)}$,
+%$\sigma^2(\gamma^{(0)})$, $\nabla v(\gamma^{(0)})$ and
+%$v''(\gamma^{(0)})$ for each of the importance distributions $p$,
+%$q^*$ and $q$at iteration $b=0$, for a prior mean of $0.021$
+%(compared with a threshold, $\mu_1=-0.14$) where
+%$(\gamma_{-}^{(0)},\gamma_{+}^{(0)})=(\mu_1-0.1,\mu_1+0.1)=(-0.244,-0.044)$}
+%\end{figure}
+%\begin{figure}          %Figure2
+%\centering
+%\includegraphics[width=4in]{C:/Documents/work/Programs/Mathematica/projects/sequential/2006_06_12_test_carlin_tableform_SIMS1_LOGOPT_LOGARGS.eps}
+%\caption{Confidence intervals for
+%$(\gamma_{-}^{(b)},\gamma_{+}^{(b)})$, $b=1,4,16$ starting at
+%$(\gamma_{-}^{(0)},\gamma_{+}^{(0)})=(\mu_1-0.1,\mu_1+0.1)=(-0.244,-0.044)$,
+%for each of $p$, $q^*$ and $q$at iteration $b=0$, for a prior mean
+%of $0.021$ (compared with a threshold, $\mu_1=-0.14$)}
+%\end{figure}
+%\begin{figure}          %Figure3
+%\centering
+%\includegraphics[width=2.5in]{C:/Documents/work/Programs/Mathematica/projects/sequential/2006_06_12_test_carlin_tableform_SIMS1_LOGOPT_LOGVALS.eps}
+%\caption{Confidence intervals for the Bayes risk (negative expected
+%utility) for $b=1,4,16$ starting at
+%$(\gamma_{-}^{(0)},\gamma_{+}^{(0)})=(\mu_1-0.1,\mu_1+0.1)=(-0.244,-0.044)$,
+%for each of $p$, $q^*$ and $q$at iteration $b=0$, for a prior mean
+%of $0.021$ (compared with a threshold, $\mu_1=-0.14$)}
+%\end{figure}
+
+%\begin{figure}          %Figure4
+%\centering
+%\includegraphics[width=4in]{C:/Documents/work/Programs/Mathematica/projects/sequential/2006_06_12_test_carlin_tableform_SIMS2_FDINIT.eps}
+%\caption{Same as Figure 1, with
+%$(\gamma_{-}^{(0)},\gamma_{+}^{(0)})=(\mu_1-0.1,\mu_1+0.1)=(-0.194,-0.044)$}
+%\end{figure}
+
+%\begin{figure}          %Figure5
+%\centering
+%\includegraphics[width=4in]{C:/Documents/work/Programs/Mathematica/projects/sequential/2006_06_12_test_carlin_tableform_SIMS2_LOGOPT_LOGARGS.eps}
+%\caption{Same as Figure 2, with
+%$(\gamma_{-}^{(0)},\gamma_{+}^{(0)})=(\mu_1-0.1,\mu_1+0.1)=(-0.194,-0.044)$}
+%\end{figure}
+%\begin{figure}          %Figure 6
+%\centering
+%\includegraphics[width=2.5in]{C:/Documents/work/Programs/Mathematica/projects/sequential/2006_06_12_test_carlin_tableform_SIMS2_LOGOPT_LOGVALS.eps}
+%\caption{Same as Figure 3, with
+%$(\gamma_{-}^{(0)},\gamma_{+}^{(0)})=(\mu_1-0.1,\mu_1+0.1)=(-0.194,-0.044)$}
+%\end{figure}
+\section{Appendix}
+\subsection{Variance of importance sampling}
+Here, we consider transformation of stopped paths such as
+$(\theta,\mathbf{y}_\tau)\rightarrow (w \times u)
+(\theta,\mathbf{y}_{\tau})$. Let $x_i \triangleq
+\mu(\mathbf{y}_i)\}_{i=0}^{n}$. We recall from Section 2 that
+conditional on $\theta$, $\{x_i\}_{i=1}^{n}$ evolves as a Markov
+chain. Furthermore, remember that
+$u(\theta,\mathbf{y}_{n})=u(\theta,\mathbf{y}_{\tau})$ because
+$\tau>i\Rightarrow u(i,\theta,\mathbf{y}_{i})=0$. Therefore,
+assuming Assume
+$q(\theta,\mathbf{x}_i)=q(\theta)q(x_1|x_0)...q(x_{i}|x_{i-1})$,
+\begin{align}
+\upsilon&=\mathrm{E}_q[u(\theta,\mathbf{x}_{n})w(\theta,\mathbf{x}_{n})]\\
+&=\mathrm{E}_q[E_q[u(\theta,\mathbf{x}_{\tau})w(\theta,\mathbf{x}_{\tau})\mathrm{E}_q[w(\theta,\mathbf{x}_{n})/w(\theta,\mathbf{x}_{\tau})|\theta,\mathbf{x}_{\tau}]|\theta]]\\
+&=\mathrm{E}_q[u(\theta,\mathbf{x}_{\tau})w(\theta,\mathbf{x}_{\tau})]
+\end{align}Is this still valid with $\tilde w$, the normalized
+weight?
+
+The advantage of the first equality is that we can work with
+$z=(\theta,\mathbf{y}_{n})$ which is a vector variable of fixed
+size. The formula for this variance using normalized weights is:
+\begin{align}
+\mathrm{Var}_q[\tilde\upsilon]&=\mathrm{Var}_q[\sum_{j=1}^n
+(\tilde w \times u)(z_j)]\\
+&\rightarrow\frac{1}{n}\mathrm{E}_p[\tilde w(z)(u(z)-\upsilon)^2]
+\end{align}
+\subsection{Bias variance decomposition of the finite difference method}
+To begin, let's assume that $q(.)=p(.)$, $n=2$ and consider the
+univariate case by fixing $k=1$. Fix $h>0$, so that
+$\tau(\gamma+h)\leq\tau(\gamma)$ and let $u(\gamma)\triangleq
+u(\theta,\mathbf{y}_{\tau(\gamma)})$, so that
+$\upsilon(\gamma)=E[u(\gamma)]$:
+\begin{align}
+\nabla_\mathrm{\scriptscriptstyle FD}^h
+u(\gamma)&=\frac{u(\gamma+h)-
+u(\gamma)}{h}\\&=\label{events}\begin{cases}
+0&, \tau(\gamma)=\tau(\gamma+h)\\
+u(1,\theta,P)-u(2,\theta,P)&, \tau(\gamma)>\tau(\gamma+h) \quad \mathrm{and}\quad a(\mathbf{y}_\tau)=P\\
+u(2,\theta,P)-u(2,\theta,T)&, \tau(\gamma)>\tau(\gamma+h) \quad
+\mathrm{and}\quad a(\mathbf{y}_\tau)=T
+\end{cases}.
+\end{align}
+\begin{align}\textsl{bias(h)}&\triangleq
+\mathrm{E}[\nabla_\mathrm{\scriptscriptstyle FD}^h u(\gamma)-\nabla
+\upsilon(\gamma)]\\&=\nabla_\mathrm{\scriptscriptstyle FD}^h
+\upsilon(\gamma)-\nabla \upsilon(\gamma)
+\end{align}
+Provided $v(\gamma+h)=v(\gamma)+\nabla v(\gamma)h+\frac{1}{2}
+\nabla_2 v(\gamma)h^2+o(h^2)$,
+\begin{align}
+\textsl{bias}(h)&=\frac{1}{2} \nabla_2 v(\gamma)h+o(h)\\&=O(|h|)
+\end{align}We need to show that
+\begin{align}
+\textsl{var}(h)&\triangleq\mathrm{Var}[\nabla_\mathrm{\scriptscriptstyle
+FD}^h u(\gamma)]\\&=O(1/|h|)
+\end{align}This is not guaranteed, given the discrete nature of
+(\ref{events}) (TODO).
+
+We may rewrite the order of the bias and variance, for an iid sample
+of size $n$ as
+\begin{align}
+\textsl{bias}(h)& = b h+o(|h|)\\
+\textsl{var}(h)& = \frac{1}{n h}\sigma^2 +o(1/|h|)
+\end{align}with $b=\nabla_2 v(\gamma)$. Suppose $h=h_* n^{-\eta}$
+and plug that expression into the above system. Then
+\begin{align}
+\textsl{mse}(h,n)&=\textsl{bias}^2(n,h)+\textsl{var}^2(n,h)\\
+&=b^2 (h_* n)^{-2\eta}+\sigma^2 h_*^{\eta}n^{\eta-1}
+\end{align}This is minimized for $\eta=1/3$. By plugging that value
+in the above, the new expression is minimized for
+\begin{align}
+h_*=\left(\frac{2\sigma^2}{(\upsilon'')^2}\right)^{1/3}
+\end{align}This results derive from Glynn, 1989.
+
+\subsection{Stratification}
+Consider $\mathbf{x}^{\mathrm{T}}\sim N(\boldsymbol{\mu},\Sigma)$
+where $\mathbf{x}$ has dimension $n$. Consider the linear
+restrictions:
+\begin{align}
+\mathbf{R}=\{\mathbf{x}:\gamma_i^{-}\leq x_i \leq
+\gamma_{i}^{+},\quad i\in \}
+\end{align}where the $\gamma_i^{-}=\infty$ and/or
+$\gamma_i^{\pm}=\pm\infty$ are allowed for some $i$, but for at
+least one $i$, $|\gamma_i^{\pm}|<\infty$. Our problem is to sample
+from $p_*(\mathbf{x})\propto
+p(\mathbf{x})\boldsymbol{1}_{[\mathbf{R}]}(\mathbf{x})$.
+
+Let's consider the unrestricted case first. A standard property of
+the normal distribution is:
+\begin{equation}
+x_i|\mathbf{x}_{-i}\sim N(\mu_{1|-1}|\Sigma_{1|-1})
+\end{equation}where
+\begin{align}
+\mu_{1|-1}&=\mu_i+\Sigma_{i,- i}\Sigma_{-i,-i}^{-1}(\mathbf{x}_{-
+i}-\boldsymbol{\mu}_{-i})\\ \Sigma_{1|-1}&=\Sigma_{ii}-\Sigma_{i,-
+i}\Sigma_{-i,-i}^{-1}\Sigma_{-i,i}
+\end{align}
+By sampling $x_i\sim $, and iterating over all $i$'s, we obtain a
+sample from the desired multivariate distribution. This is a
+particular application the Gibbs algorithm. It's efficiency is
+inversely related to $n$ and the degree of positive correlation
+between the $x_i$'s. However, it is of interest to us as it is
+relatively straightforward to sample from a truncated univariate
+normal, by the method of inverse cdf:
+\begin{algorithmic}
+\STATE $\gamma_i^{\pm}\leftarrow
+(\gamma_i^{\pm}-\mu_{i|-i})/\Sigma_{i|-i}$ \STATE
+$u\sim\mathrm{Unif}[\Phi(\gamma_i^{-}),\Phi(\gamma_i^{+})]$ \STATE $
+x_i^*\leftarrow \Sigma_{i|-i}\Phi^{-1}(u)+\mu_{i|-i}$
+\end{algorithmic}
+
+For the reasons previously mentioned, we need to consider a more
+efficient algorithm. Philippe and Robert, 2003 propose a perfect
+sampling scheme. Troughton and Godsill, propose a ``Gaussian
+windowing'' approach with intuitive appeal and simplicity. Consider
+as candidate density, $q(.)$
+\begin{align}
+N(\mathbf{x}|\boldsymbol{\mu}_*,\Sigma_*)\propto
+N(\mathbf{x}|\boldsymbol{\mu},\Sigma)N(\mathbf{x}|\boldsymbol{\bar\gamma},\times
+ \Lambda_{\kappa})
+\end{align}where
+\begin{align}
+\boldsymbol{\bar\gamma}
+&=(\boldsymbol{\gamma}^{-}+\boldsymbol{\gamma}^{-})/2\\
+\Delta\boldsymbol\gamma&=\boldsymbol{\gamma}^{+}-\boldsymbol{\gamma}^{-}\\
+\Lambda_{\kappa}&=\kappa\times\textsl{diag}(\Delta\boldsymbol\gamma)
+\end{align}so that
+\begin{align}
+\Sigma_*&=(\Sigma^{-1}+\Lambda_{\kappa}^{-1})^{-1}\\
+\mu_*&=\Sigma_*(\Sigma^{-1}\boldsymbol{\mu}+\Lambda_{\kappa}^{-1}\boldsymbol{\bar{\gamma}})
+\end{align}We are no longer restricted to sample from each
+conditional univariate distribution. Furthermore, the mean is a
+weighted average of the true mean and the center of the bounds.
+Decreasing $\kappa$ increases the probability that the draws will
+fall in the hypercube; conditional on that event, however,
+$w(.)=q(.)/p(.)$ will be more variable. In this context, the
+adaptive importance sampling method described below seems highly
+relevant, likewise for MCMC.
+
+\subsection{Adaptive importance sampling}
+We recall that $\mu$ is the prior mean in $p(.)$. Here, we define a
+family of sampling distributions indexed by $\lambda$:
+$\{q_{\lambda}(.),\lambda\in \Lambda\}$. In the case of model
+(\ref{normal_normal}), this will be, for example,
+$q_{\lambda}(.)=p(.|\mu=\lambda)$.
+
+For a vector $z\sim q_*(z)$, and a quantity of interest
+$g=\mathrm{E}[z]$, the method traditionally proceeds as follows (see
+Oh and Berger, 1992). First we find $\Lambda$ such that
+$\mathrm{E}_\lambda[\Lambda(z)]=\lambda$. Starting from and initial
+guess $\lambda=\lambda_0$, we update it as follows
+\begin{algorithmic}
+\STATE $j\leftarrow 0$; $n_0\leftarrow 0$ \FOR{$j=1$ to $J$} \STATE
+Generate an iid sample $z_1,...,z_{n_{j}}$ from $q_{\lambda_{j-1}}$
+\STATE
+$\lambda_{j}\leftarrow\hat{\mathrm{E}}_{\lambda_{j-1}}[w_{j-1}(z)\Lambda(z)]$
+\STATE $\hat g \leftarrow (N_{j-1} \hat g + n_j
+\hat{\mathrm{E}}_{\lambda_1}[w_1(z)z])/(N_{j-1}+n_j)$ \STATE
+$N_{j-1}\leftarrow N_{j-1}+n_j$\ENDFOR
+\end{algorithmic}
+We would expect $\lambda
+\xrightarrow{p}\lambda_*=\mathrm{E}_*[\Lambda(z)]$ and therefore
+this method will be most effective if $q_{\lambda_*}$ is a good
+approximation to $q_*(.)$. The dimensionality of $\Lambda$ should be
+inversely related to expected variability of the data.
+
+A possible variant is to update $\lambda$ the same way we update
+$g$, that is by smoothing it across iterations. Moreover the
+coefficient of smoothing can be set according to the estimated
+variability in each sample. Finally, we can replace the moment
+matching step by a sample variance minimizing step, that is
+$\lambda_l = \min_\lambda
+\widehat{\mathrm{Var}}_{\lambda_{l-1}}[w_{l-1}(z) z]$ (see Pasarica
+and Gelman, 2005 for a successful implementation of this idea in a
+Markov chain context).
+
+%\subsection{Some Algebra}
+%The \textit{Woodbury} formula (see Lange, 1996):
+%\begin{align}\label{SMW}
+%(A+B C D)^{-1}=A^{-1}[I-B(C^{-1}+D A^{\mathrm{-1}}B)^{-1}D A^{-1}]
+%\end{align}
+%Consider the decomposition of a positive definite matrix
+%$\Sigma$:\begin{align}\Sigma=\Gamma \Lambda_{\Sigma}
+%\Gamma^{\mathrm{T}}\end{align} where $\Gamma.\Gamma^{\mathrm{T}}=I$
+%and $\Lambda_{\Sigma}$ is a diagonal matrix. This implies
+%$\Sigma^{-1}=\Gamma \Lambda_{\Sigma}^{-1} \Gamma^{T}$. With
+%$B\triangleq \Gamma$, $D\triangleq \Gamma^{T}$, $C\triangleq
+%\Lambda_{\Sigma}^{-1}$, and $A=\Lambda^{-1}$ another diagonal
+%matrix, we get by (\ref{SMW}) is
+%\begin{align}\label{SMW}
+%(\Sigma^{-1}+\Lambda^{-1})^{-1}&=\Lambda[I-\Gamma(\Lambda_{\Sigma}+\Gamma^{\mathrm{T}}
+%\Lambda \Gamma)^{-1}\Gamma^{T} \Lambda]
+%\end{align}
+
+\subsection{misc}
+\begin{align}
+x\sim N(\mu,\sigma^2) \Rightarrow \mathrm{E}[x 1\{a\leq x\leq
+b\}]=-\sigma(\phi((b-\mu)/\sigma)-\phi((a-\mu)/\sigma)+\mu(\Phi((b-\mu)/\sigma)-\Phi((a-\mu)\sigma))
+\end{align}
+
+\end{document}

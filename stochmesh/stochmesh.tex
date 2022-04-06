@@ -1,40 +1,25 @@
 \documentclass[11pt]{article}
+\usepackage[
+bibencoding=auto
+,backend=biber
+,sorting=ynt
+% ,style=verbose-ibid
+% ,citetracker
+% ,sorting=none
+% ,autolang%error: no value specified for autolang.
+]{biblatex}
+\usepackage{csquotes, datetime2, keyfloat}
+%\newcounter{res}
+%\newtheorem{result}[res]{Result}
+%\usepackage{filecontents}
+\addbibresource{../rogard.bib}% syntax for version >= 1.2
 \usepackage{amsmath,amssymb,amsthm}
-\usepackage{mathrsfs}
 \usepackage{datetime2, csquotes}
-\usepackage{algorithmic}
-\usepackage{verbatim}
-\usepackage{graphicx}
-\usepackage{latexsym}
-\usepackage{euscript}
-\usepackage{vmargin}
-\usepackage[dvips]{epsfig}
-\usepackage{pst-tree}
-\usepackage{psfrag}
-%\usepackage{notebook2e}
-%\usepackage{lcaption}
-
-\setpapersize{USletter}
-\setmarginsrb{2.5cm}{2.5cm}{2.5cm}{1.75cm}{0pt}{0mm}{0pt}{0.70cm}
-
-%Array
-\setlength{\tabcolsep}{30pt}
-\renewcommand{\arraystretch}{1.2}
-
-% Lcaption
-%\smartcap
-%\CapSize=4.5in
 
 % ---
-\ProvideDocumentCommand{\origDate}{}{\DTMdate{2007-05-14}}
+\ProvideDocumentCommand{\origDate}{}{\DTMdate{2006-11-08}}
 \ProvideDocumentCommand{\ThisDate}{}{\DTMdate{2022-04-05}}
 % ---
-
-% Float Control
-\renewcommand{\topfraction}{0.95}
-\renewcommand{\bottomfraction}{0.95}
-\renewcommand{\textfraction}{0.05}
-\renewcommand{\floatpagefraction}{.95}
 
 \title{On Bayesian survival analysis and the stochastic mesh method\footnote{Revisions:\url{https://github.com/erwannr/statistics/commits/main/stochmesh}}}
 \author{Erwann Rogard}
@@ -48,8 +33,8 @@
 
 \maketitle
 
-\begin{abstract}Sequential clinical trials are an optimal stopping problem, for which there exist a vast literature in option pricing. The purpose of this paper is to study the applicability of the stochastic mesh method. In a nutshell, the latter addresses the computational challenge inherent to the intuitive random tree method, by using a combination of independent paths, and likehood ratios linking each node to those in the next period. This is note originally dated \origDate~was supposed to be outline of my Phd thesis, whose orals I had defended in December 2005. \autoref{sec:glass} summarizes the existing literature on the stochastic mesh, and goes on to discuss the Bayesian setting. \autoref{sec:param} addresses parametric boundaries\end{abstract}
-
+\begin{abstract}Both Sequential clinical trials and option pricing are optimal stopping problems. There exists well documented simulation methods for the latter,
+  are they applicable to the former? Such was the topic of my MPhil examination in December 2005. This is a follow up paper originally dated \origDate. Since it was never made public, the new date is appropriate. The specific method under consideration is the stochastic mesh. It addresses the computational challenge inherent to the intuitive random tree method, by using a combination of independently simulation paths, and likehood ratios linking each node to those in the next period. \autoref{sec:glass} summarizes the existing literature, and goes on to discuss the Bayesian setting. \autoref{sec:param} addresses parametric boundaries.\end{abstract}
 
 \section{Problem formulation}\label{sec:glass}
 Consider a sequential clinical trial extending over a maximum of $i_*$ periods to assess the effect $\theta$ of a treatment T, in comparison to the placebo P. A prior
@@ -96,7 +81,7 @@ This has the following characteristic:
 To remedy the first limitation of \textit{Algorithm} 1 we replace the simulated tree by independent paths and correct by importance sampling:
 \begin{align}
 \mathrm{E}[u_*(\mathbf{y}_{i+1})|\mathbf{y}_i]=\mathrm{E}_*[u_*(\mathbf{y}_{i+1}^*)\frac{p(\mathbf{y}_{i+1}^*|\mathbf{y}_i^*=\mathbf{y}_i)}{p(\mathbf{y}_{i+1}^*)}]
-\end{align} where $\mathbf{y}_i^*$ indicates a variable independent of $\mathbf{y}_i$ but with the same distribution. Here we should understand $\mathbf{y}_i$ as the sufficient statistics of the data for $\theta$, otherwise we have $p(\mathbf{y}_{i+1}^*|\mathbf{y}_{i}^*=\mathbf{y}_i)=0$ unless the sample $\mathbf{y}_{i}^*$ agrees exactly with $\mathbf{y}_i$. Glasserman 2004, section 8.5.1 gives all conditions for convergence, in particular $p(\mathbf{y}_{i+1}|\mathbf{y}_i,...,\mathbf{y}_1)=p(\mathbf{y}_{i+1}|\mathbf{y}_i)$.
+\end{align} where $\mathbf{y}_i^*$ indicates a variable independent of $\mathbf{y}_i$ but with the same distribution. Here we should understand $\mathbf{y}_i$ as the sufficient statistics of the data for $\theta$, otherwise we have $p(\mathbf{y}_{i+1}^*|\mathbf{y}_{i}^*=\mathbf{y}_i)=0$ unless the sample $\mathbf{y}_{i}^*$ agrees exactly with $\mathbf{y}_i$. Convergence is obtained if $p(\mathbf{y}_{i+1}|\mathbf{y}_i,...,\mathbf{y}_1)=p(\mathbf{y}_{i+1}|\mathbf{y}_i)$\cite[Section 8.5.1]{glas2004}.
 
 The new procedure is
 \theoremstyle{remark}
@@ -185,12 +170,12 @@ The second way to estimate the stopping rule is to model it. Let $C=(C_1,...,C_{
 \item We have to optimize over all entries of $\gamma$ simultaneously
 \item The structure of the optimization problem depends on the distribution and utility under consideration
 \end{enumerate}The first characterisitc alleviates the need for the tree structure of BR, while the second one bypasses the difficulties of BR--IS in the case where transition and marginal densities of data are not known. 
-This comes at the cost of having to find an appropriate model and an appropriate optimization procedure. A minor restriction, is that $p(\theta)$ be proper. Practically, this often means restricting the search to conjugate priors, or otherwise incorporating some data into the prior (see Gelman et al., Section 4.3).
+This comes at the cost of having to find an appropriate model and an appropriate optimization procedure. A minor restriction, is that $p(\theta)$ be proper. Practically, this often means restricting the search to conjugate priors, or otherwise incorporating some data into the prior\cite[Section 4.3]{gelman2004}.
 
 In general, the different portions of the continuation region are parameterized separately i.e. $C_i(\gamma)=C_i(\tilde \gamma_i)$ where $\tilde \gamma_i$ does not overlap with any of the $\tilde \gamma_j$'s. We call $\boldsymbol{\gamma}_i$ the vector $\gamma$ truncated after the i$^{th}$ continuation region, such that $\mathbf{C}_i=\mathbf{C}(\boldsymbol\gamma_i)$.
 
 \section{Solving the parametric boundaries problem}\label{sec:param}
-The quantity to maximize,(\ref{upsilon_gamma}), is an expectation which in general has to be approximated by a simulation average. One approach therefore, it to sample a fixed number of draws, and vary $\gamma$ in the search for the optimum. Because the resulting function approximation is not smooth, it has to be approximated in successive steps, usually one dimension at at time. Glasserman 2004 warns that this method may not converge to the desired solution. Moreover, we cannot easily control the degree of accuracy if the number of paths is kept fixed.
+The quantity to maximize,(\ref{upsilon_gamma}), is an expectation which in general has to be approximated by a simulation average. One approach therefore, it to sample a fixed number of draws, and vary $\gamma$ in the search for the optimum. Because the resulting function approximation is not smooth, it has to be approximated in successive steps, usually one dimension at at time. This method may not converge to the desired solution\cite{glas2004}. Moreover, we cannot easily control the degree of accuracy if the number of paths is kept fixed.
 
 It may be better to explicitly recognize the stochastic nature of the problem and solve it in an iterative fashion that allows for termination based on some convergence criterion. We start from an initial guess $\gamma^{(0)}$, and update it so as to maximize a local approximation to (\ref{upsilon_gamma}):
 \begin{align}\label{newt_iter}
@@ -229,7 +214,10 @@ The procedure to estimate (\ref{nabla_fd}) is to sample $m$ iid paths from $q(\t
 Each term in the difference in (\ref{nabla_u_is}) is evaluated with the same path which reduces variance provided the two terms are positively correlated. At each iteration, $b$, a fresh sample of size $m$ is generated and $\hat \nabla_{\mathrm{FD}}^{(b)}\upsilon$ is computed. In setting $m$ we should keep in mind that averaging of the $\gamma^{(b)}$'s is already present, as implicit in (\ref{newt_iter}). 
 
 We can weaken the above formulation to $w(\theta,\mathbf{y}_{\tau}) \propto p(\theta,\mathbf{y}_\tau) / q(\theta,\mathbf{y}_\tau)$ with an abitrary normalizing constant, which implies that we should rescale the weights to sum to one.
-This may be a matter of design (see Hestenberg, 1995) or necessity, in case either of $p(.)$ or $p(.)$ are known only up to a constant of proportionality.
+This may be a matter of design\cite{Hesterb1995} or necessity, in case either of $p(.)$ or $p(.)$ are known only up to a constant of proportionality.
 Unbiasedness of $\hat \nabla_{\mathrm{FD}}\upsilon$, relative to $\nabla_{\mathrm{FD}}\upsilon$ is only preserved in the limit as $n\rightarrow \infty$.
+
+\section*{Bibliography}
+\printbibliography[heading=none]
 
 \end{document}

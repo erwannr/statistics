@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathrsfs}
+%\usepackage{algorithmic}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{euscript}
+\usepackage{vmargin}
+\usepackage[dvips]{epsfig}
+\usepackage{pst-tree}
+\usepackage{psfrag}
+%\usepackage{flafter}%that's only to keep figures from floating
+%\usepackage{natbib} %DOES NOT WORK
+
+%\usepackage{notebook2e}
+%\usepackage{lcaption}
+
+\setpapersize{USletter}
+\setmarginsrb{2.5cm}{2.5cm}{2.5cm}{1.75cm}{0pt}{0mm}{0pt}{0.70cm}
+
+%Array
+\setlength{\tabcolsep}{30pt}
+\renewcommand{\arraystretch}{1.2}
+
+% Lcaption
+%\smartcap
+%\CapSize=4.5in
+
+
+% Float Control
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{.95}
+
+\newcommand{\tangnt}{t^{\mathrm{u}}}
+\newcommand{\linejoin}{t^{\mathrm{l}}}
+\newcommand{\upperlog}{u}
+\newcommand{\lowerlog}{l}
+\newcommand{\proposal}{s}
+\newcommand{\normconst}{c}
+\newcommand{\cumulproposal}{S}
+
+\newcommand{\arsindex}{k}
+\newcommand{\arsmaxindex}{K}
+
+%{set up}
+\title{Derivative Based Adaptive Rejection Sampling: Summary}
+\author{Erwann Rogard}
+
+\begin{document}
+\bibliographystyle{plain}
+\maketitle
+The purpose of the algorithm (\cite{1992Gilks}, further detailed in \cite{1993Wild}), is to sample from a univariate log--concave (target) density, known up to a constant of proportionality, as commonly arising in Gibbs sampling applications. The algorithm is derived from rejection sampling but instead of being pre--specified, the covering (proposal) density is constructed adaptively using only evaluations of the un--normalized density and its derivative. Geometrically, the log of the former is the upper envelope of the convex hull delimited by the tangents to the log un--normalized target at the evaluation points. This modification to the original algorithm requires a new rejection rule which depends on the distances between the true density and the upper hull, evaluated at the candidate draw, and that of the latter to a lower hull, formed by joining the evaluation points. Consider the definitions:
+\begin{center}
+\begin{tabular}{|@{\hspace{1ex}}l@{\hspace{1ex}}|@{\hspace{1ex}}l@{\hspace{1ex}}|@{\hspace{1ex}}p{2.9in}@{\hspace{1ex}}|}\hline
+\multicolumn{3}{|@{\hspace{1ex}}l|}{Definitions}\\\hline
+$D$ & & domain (connected)\\
+$D_{\pm}$ & & lower/upper bound\\
+$f(.)$ & & log--concave density\\
+$g(.)$ & $f(.) \propto$ g(.) & un--normalized density\\
+$h(.)$ & $\log g(.)$& \\
+$h'(.)$ & $h'(x)=\partial h(.)/\partial x$&\\\hline
+$x_{\arsindex}$ &  $x_{\arsindex}\in D$& $\arsindex$th abscicae\\
+$x_{(\arsindex)}$ & $x_{(\arsindex)}\leq x_{(\arsindex+1)}$ & $\arsindex$th ordered abscicae\\
+$\tangnt_{\arsindex}(.)$ &  & tangent to $h(.)$ at $x_{(\arsindex)}$, $\arsindex=1,...\arsmaxindex$\\
+$\linejoin_{\arsindex}(.)$ &  & line through $\{(x_{(j)},h(x_{(j)})):j=\arsindex,\arsindex+1\}$, $\arsindex=1,...,\arsmaxindex-1$\\
+$X$ & $\{x_\arsindex:\arsindex=1,...,\arsmaxindex\}$  &  set of $\arsmaxindex\geq 2$ points such that $h'(x_{(1)})>0$ and $h'(x_{(\arsmaxindex)})<0$, if $D_{-}=-\infty$ and , $D_{+}=+\infty$, respectively\\
+$z_{(\arsindex)}$ & $\tangnt_{\arsindex}(z_{(\arsindex)})=\tangnt_{\arsindex+1}(z_{(\arsindex)})$ & tangent intersection abscicae, $\arsindex=1,...,\arsmaxindex-1$\\
+$z_{(0)}$ & $D_{-}$ & \\
+$z_{(\arsmaxindex)}$ & $D_{+}$ & \\
+$\upperlog(.)$ &  & upper hull envelope of $h(.)$\\
+$\proposal(.)$ & $\proposal(x)\propto \exp(\upperlog(x))$ & proposal density \\
+$\normconst$ & $\int_D \exp(\upperlog(x)) dx$ & normalizing constant \\
+$\cumulproposal(.)$ & $\int_{z_{(0)}}^{(.)} s(x) dx$ & cumulative density\\
+$\lowerlog(.)$ & & lower hull envelope \\\hline
+\end{tabular}
+\end{center}
+
+In particular, 
+\begin{align}
+\tangnt_\arsindex(x) &=h(x_{(\arsindex)})+(x-x_{(\arsindex)})h'(x_{(\arsindex)})\\
+\linejoin_\arsindex(x) &=h(x_{(\arsindex)})+(x-x_{(\arsindex)})\frac{h(x_{(\arsindex+1)})-h(x_{(\arsindex)})}{x_{(\arsindex+1)}-x_{(\arsindex)}}\\
+z_{(\arsindex)}&=-(\tangnt_{\arsindex+1}(0)-\tangnt_{\arsindex}(0))/(h'(x_{(\arsindex+1)})-h'(x_{(\arsindex)}))\\
+\upperlog(x)&=\sum_{\arsindex=1}^\arsmaxindex 1{\{z_{(\arsindex-1)}\leq x <z_{(\arsindex)}\}} \tangnt_{\arsindex}(x)\\
+\cumulproposal^\upperlog_{\mathrm{un}}(x)&= 
+\sum_{\arsindex=1}^{\arsmaxindex}\int_{x\wedge z_{(\arsindex-1)}}^{x\wedge z_{(\arsindex)}}\exp(\tangnt_\arsindex(y))dy\\
+&=\sum_{\arsindex=1}^{\arsmaxindex}\frac{1}{h'(x_{(\arsindex)})}\left( \exp(\tangnt_\arsindex(x\wedge z_{(\arsindex)}))-\exp(\tangnt_\arsindex(x\wedge z_{(\arsindex-1)}))\right)\\
+\cumulproposal_\upperlog^{-1}(u)&=\inf\{x:\cumulproposal^{\mathrm{un}}_\upperlog(x)\geq u \normconst\}\\\label{eq:invcumul_1}
+&=x_{(\arsindex_*)}+\frac{1}{h'(x_{(\arsindex_*)})}\left(\log\left(e^{\tangnt_{\arsindex_*}(z_{(\arsindex_*-1)})}+h'(x_{(\arsindex_*)})(\normconst u-\cumulproposal^{\mathrm{un}}_\upperlog(z_{(\arsindex_*-1)}))\right)-h(x_{(\arsindex_*)})\right)\\\label{eq:invcumul_2}
+%&=z_{(i_*-1)}+\frac{1}{h'(x_{(i_*)})}\log\left(1+e^{-\tangnt_{i_*}(z_{(i_*-1)})}h'(x_{(i_*)})\normconst(u-\cumulproposal_{\mathrm{un}}^\upperlog(z_{(i_*-1)}))\right)\\
+%\normconst(u-\cumulproposal_{\mathrm{un}}^\upperlog(z_{(i_*-1)}))}{\exp(\tangnt(z_{(i_*-1)}))}\right)\\
+\lowerlog(x)&=\sum_{\arsindex=1}^{\arsmaxindex-1}1\{x_{(\arsindex)}\leq x<x_{(\arsindex+1)}\}\linejoin_{\arsindex}(x)-\infty(1-1\{x_{(1)}\leq x<x_{(\arsmaxindex)}\})
+\end{align}where $\arsindex_*=\min\{\arsindex:\cumulproposal^\upperlog(z_{(\arsindex)})\geq u\}$. %The presence of of the exponential term in (\ref{eq:invcumul_1}) may generate overflows and underflows, for the equivalent representations (\ref{eq:invcumul_2}), respectively.
+
+The exponential terms in the un--normalized cumulative density are suceptible to overflows. To avoid this we do
+\begin{align}
+ h(.)\leftarrow h(.) - \max_{\arsindex}h(z_{(\arsindex)})
+\end{align}which is permissible because $h(.)$ is the log of an un--normalized version of $f(.)$.
+
+The algorithm below, initialized with some suitable $X$, generates one draw from $f$:
+\theoremstyle{remark}
+\newtheorem{algorithm}{Algorithm}
+\begin{algorithm}[ARS]\label{alg:ARS}
+\hfill\par
+\begin{enumerate}
+\item $\omega_l \stackrel{\mathrm{iid}}{\sim}\mathrm{Unif}(0,1),l\in\{0,1,2\}$; $x^*\leftarrow \cumulproposal_\upperlog^{-1}(\omega_0)$
+\item if($\omega_1\leq \exp(l(x^*)-u(x^*))$)\{ return $x^*$ \}else\{\\
+ if($\omega_2\leq \exp(h(x^*)-u(x^*)$)
+\{ \begin{enumerate}
+\item $X\leftarrow (X,x^*)$, $\arsmaxindex\leftarrow \arsmaxindex+1$, \item update derived quantities; \item return $x^*$
+\end{enumerate}\}
+else\{ goto 1.\}\\
+\}
+\end{enumerate}
+\end{algorithm}
+
+%A function object is a more general concept than a function because a function object can have state that persist across several calls (like a static local variable) and can be initialized and examined from outside the object (unlike a static local variable). For example:
+
+\bibliographystyle{plain}
+\bibliography{mybib.bib}
+
+\end{document}

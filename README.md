@@ -6,5 +6,9 @@ Tutorial for using R, of a course taught in 2006 by Christopher Heyde, on time s
 
 ## [Survival analysis](survanal)
 
-Notes on survival analysis.
+## [Stochastic mesh + survival analysis](stochmesh)
+
+## [Derivative based adaptive rejection sampling](deriv_ars)
+
+
 

@@ -1,0 +1,136 @@
+\documentclass[11pt]{article}
+\usepackage[
+bibencoding=auto
+,backend=biber
+,sorting=ynt
+% ,style=verbose-ibid
+% ,citetracker
+% ,sorting=none
+% ,autolang%error: no value specified for autolang.
+]{biblatex}
+\usepackage{csquotes, datetime2, keyfloat}
+%\newcounter{res}
+%\newtheorem{result}[res]{Result}
+%\usepackage{filecontents}
+\addbibresource{../rogard.bib}% syntax for version >= 1.2
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{datetime2, csquotes}
+
+% ---
+\ProvideDocumentCommand{\origDate}{}{\DTMdate{2007-04-24}}
+\ProvideDocumentCommand{\ThisDate}{}{\DTMdate{2022-04-06}}
+% ---
+
+\title{On Bayesian utility maximization}
+\author{Erwann Rogard}
+\date{\ThisDate}
+
+\usepackage{hyperref}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}The original notes are dated \DTMdate{2007-04-24}. They were supposed to ingrate with those on the stochastic mesh\footnote{\url{https://github.com/erwannr/statistics/blob/main/stochmesh/stochmesh.pdf}}. They have as their starting point a paper on parametric formulation of `Sequential Decision Analysis in Clinical Trials'\cite{carlin1998}\end{abstract}
+
+\section{utility}
+Throughout we will assume the following utility
+\begin{align}u_i(\theta,a)=\left\{
+\begin{array}{ll}
+-c_{i,T}(\theta-c_P)^{+}-c_i,&\quad a=T\\
+-c_{i,P}(c_T-\theta)^{+}-c_i,&\quad a=P\\
+-c_i-\infty \times 1\{i=n\},&\quad a=C
+\end{array}\right.
+\end{align}where the $c_{i,a}$'s denote penalties, $[c_P,c_T]$ denotes and indifference zone, and $c_j$ is the cost of sampling data at period $i$.
+
+Recall that $i=0,...,i_*$ indexes the sampling period. The sample sizes are determined in advance; let $n_1,...,n_{i_*}$ denote the cumulative sample sizes for each period. 
+
+\section{Normal mean, known variances}
+Parameter and data are distributed as
+\begin{align}\label{normM_knownVar_prior}
+p(\theta)&=N(\theta|\mu,\sigma_0^2)\\\label{norml_dta}
+p(\mathbf{y}_{n_i})&=\Pi_{j=1}^{i} N(\bar{y}_j|\theta,\sigma_j^2/n_j)
+\end{align}For simplicity $n_i=1$. The posterior distribution is $p(\theta|\mathbf{y}_i)=p(\theta|\mu(\mathbf{y}_i))= N(\mu(\mathbf{y}_i),\boldsymbol\sigma_i^2)$ with
+\begin{align}
+\mu(\mathbf{y}_i)&=\boldsymbol{\sigma}_i^2(\boldsymbol{\sigma}_{i-1}^{-2}\mu(\mathbf{y}_{i-1})+\sigma_i^{-2} y_i)\\
+\boldsymbol\sigma_i^2&=\left \{
+\begin{array}{ll}
+(\boldsymbol\sigma_i^{-2}+\sigma_i^{-2})^{-1},& 1\leq n\\
+\sigma_0^2,& i=0
+\end{array}\right.
+\end{align}
+Under this model, $\mathrm{E}[u_i(\theta,a)|\mathbf{y}_i]$ for $a\in\mathcal{A}^{\mathrm{s}}$, has an explicit form in terms of $\phi(.)$ and $\Phi(.)$, the density and cumulative probability, respectively, of the standard normal distribution. We use the Beasly--Springer--Moro algorithm for a fast computation of $\Phi(.)$ 
+For \textit{Algorithm} 2 we also need  $p(\mu(\mathbf{y}_{i+1})|\mu(\mathbf{y}_{i}))$ which has an explicit form in terms of $\phi(.)$.
+
+The boundaries, parameterized as follows
+\begin{align}\label{normM_knownVar_prior_T_i}
+T_i &=\{\mathbf{y}_i:\mu(\mathbf{y}_i)\geq \mu_i\}\cap C_i^{\mathrm{c}}\\\label{normM_knownVar_prior_P_i}
+P_i &=\{\mathbf{y}_i:\mu(\mathbf{y}_i)< \mu_i\}\cap C_i^{\mathrm{c}}\\\label{normM_knownVar_prior_C_i}
+C_i &=\{\mathbf{y}_i:\gamma_i^{-}<\mu(\mathbf{y}_i)<\gamma_i^{+}\}
+\end{align}where $\mu_i=\frac{c_{i,T} c_P-c_{i,P}c_T}{c_{i,T}+c_{i,P}}$, so that
+$\gamma=(\tilde\gamma_1,...,\tilde\gamma_{n-1})$ with $\tilde\gamma_{i}=(\gamma_i^{-},\gamma_i^{+})$.
+This parametrization lead is optimal. % TODO what?
+
+\section{Normal mean, Gamma precision}
+We  assume (\ref{norml_dta}) for the data and replace (\ref{normM_knownVar_prior}) by
+\begin{align}
+p(\theta|\sigma^2)&=N(\theta|\mu,\sigma^2/\kappa)\\
+p(\rho)&=\chi^2(\rho|\nu_0,\sigma_0^2)\\
+&\propto \rho^{\frac{\nu_0}{2}-1}\exp(-\nu_0\sigma_0^2\rho/2)
+\end{align}where $\rho\triangleq 1/\sigma^2$. The posterior distribution is
+\begin{align}
+p(\theta,\rho|\mathbf{y}_{n})&=p(\theta,\rho|\bar{y}_{n},s_{n})\\
+&\propto N(\theta|\mu(\bar{y}_{n}),(\kappa_i\rho)^{-1})\chi^2(\rho|\nu_{n},\sigma_i^2(\bar{y}_{n},s_{n}))
+\end{align}where
+\begin{align}
+\mu(\bar{y}_{n})&=\frac{\kappa \mu+{n}\bar{y}_{n}}{\kappa_{n}}\\
+\kappa_{n}&=\kappa+{n}\\
+\nu_{n}&=\nu_0+{n}\\
+\nu_{n} \sigma_{n}^2(\bar{y}_{n},s_{n}^2)&=\frac{{n} \kappa}{\kappa_{n}}(\mu-\bar{y})^2+({n}-1)s_{n}^2+\nu_0\sigma_0^2
+\end{align}Equivalently,
+\begin{align}
+p(\theta|\rho,\mathbf{y}_{n})&= N(\theta|\tilde\mu_{n},(\rho \kappa_{n})^{-1})\\
+p(\rho|\mathbf{y}_{n})&=\chi^2(\rho|\nu_n,\tilde\sigma_{n}^2)
+\end{align}where $\tilde \mu_n \triangleq \mu(\bar{y}_n)$ and $\tilde \sigma_n^2 \triangleq \sigma_n^2(\bar{y}_{n},s_{n}^2)$. To compute the expected utility, we will need
+\begin{align}
+p(\theta|\bar{y}_{n},s_{n}^2)=t_{\nu_{n}}(\theta|\tilde\mu_{n},\tilde \sigma_{n}^2/\kappa_n)
+\end{align}These are standard results from \cite[Section 3.3]{gelman2004}. In order to compute the weights in \textit{Algorithm} 2 we have to determine the predictive distribution:
+\begin{align}\label{conj_NG_pred}
+& p(\bar{y}_{n_2},s_{n_2}^2|\bar{y}_{n_1},s_{n_1}^2)\\\nonumber
+&=\mathrm{E}[ N(\bar{y}_{n_2}|\theta,(n_2\rho)^{-1})\chi^2(s_{n_2}^2|n_2-1,\rho)|\bar{y}_{n_1},s_{n_1}^2]
+%\\\nonumber
+%&\propto (s_{n_2}^2)^{(n_2-1)/2-1}\int\int \rho^{\nu_{n_1+n_2+1}/2-1}\exp\{-\frac{\rho}{2}[n_2(\bar{y}_{n_2}-\theta)^2+\kappa_{n_1}(\theta-\tilde\mu_{n_1})^2+\nu_1 \tilde\sigma_{n_1}^2+(n_2-1) s_{n_2}^2]\}d\theta d\rho
+\\\nonumber\begin{split}
+&\propto (s_{n_2}^2)^{(n_2-1)/2-1}\int\int\Gamma\left(\rho|\nu_{n_1+n_2+1}/2,\beta(\bar{y}_{n_2},s_{n_2}^2)\right)d\theta d\rho
+\end{split}
+\\\nonumber
+&\propto (s_{n_2}^2)^{(n_2-1)/2-1}\int\beta(\bar{y}_{n_2},s_{n_2}^2)^{-\nu_{n_1+n_2+1}/2}d\theta
+\\\nonumber
+  &\propto (s_{n_2}^2)^{(n_2-1)/2-1}(\tau^2(\bar{y}_{n_2},s_{n_2}^2))^{-\nu_{n_1+n_2+1}/2}\\\nonumber
+  & \hspace{1em}\times\int t_{\nu_{n_1+n_2-1}}(\theta|\kappa_{n_1+n_2}^{-1}(n_2\bar{y}_{n_2}+\kappa_{n_1} \mu_{n_1}),\tau^2(\bar{y}_{n_2},s_{n_2}^2)/\nu_{n_1+n_2})d\theta\\\nonumber
+&\propto (s_{n_2}^2)^{(n_2-1)/2-1} (\tau^2(\bar{y}_{n_2},s_{n_2}^2))^{-(\nu_{n_1+n_2-1}+1)/2}
+%&\propto \int \left(1+\frac{1}{\nu_i}\left(\frac{\theta-\kappa_{2i+1}^{-1}((i+1)\bar{y}_{i+1}+\kappa_i \mu_i)}{((i+1)\kappa_i \kappa_{2i+1}^{-1}(\bar{y}_{i+1}-\mu_i)^2+\kappa_{2i+1}(\nu \tilde \sigma_i^2-i s_{i+1}^2))/\sqrt{\nu_i}}\right)^2\right)^{-(\nu_{i+1}+1)/2}d\theta
+\end{align}where 
+\begin{align}\nonumber
+\beta(\bar{y}_{n_2},s_{n_2}^2)&\propto(\theta-\kappa_{n_1+n_2}^{-1}(n_2\bar{y}_{n_2}+\kappa_{n_1} \tilde\mu_{n_1}))^2+\tau^2(\bar{y}_{n_2},s_{n_2}^2)\\\nonumber
+\tau^2(\bar{y}_{n_2},s_{n_2}^2)&=(\kappa_{n_1}n_2 \kappa_{n_1+n_2}^{-2}(\bar{y}_{n_2}-\tilde\mu_{n_1})^2+\kappa_{n_1+n_2}^{-1}(\nu_{n_1}\tilde\sigma_{n_1}^2+(n_2-1) s_{n_2}^2))
+\end{align}It follows that 
+\begin{align}\label{conj_NG_barY}
+p(\bar{y}_{n_2}|s_{n_2}^2,\bar{y}_{n_1},s_{n_1}^2)&=t_{\nu_{n_1+n_2-1}}(\bar{y}_{n_2}|\tilde\mu_{n_1},\kappa_{n_1+n_2}{(n_2\kappa_{n_1}\nu_{n_1+n_2-1})}^{-1}((n_2-1) s_{n_2}^2+\nu_{n_1} \tilde \sigma_{n_1}^2))\\\label{conj_NG_sSq}
+p(s_{n_2}^2|\bar{y}_{n_1},s_{n_1}^2)&=C\times(s_{n_2}^2)^{(n_2-1)/2-1}(s_{n_2}^2+\nu_{n_1}\tilde \sigma_{n_1}^2/(n_2-1))^{-\nu_{n_1+n_2-1}/2}
+\\C&=((\nu_{n_1}\tilde\sigma_{n_1}^2)/(n_2-1))^{\frac{1}{2}(\nu_{n_1})}\Gamma(\nu_{n_1+n_2-1}/2)/(\Gamma((n_2-1)/2)\Gamma(\nu_{n_1}/2))
+\end{align}To generate the paths, for either of \emph{Algorithm} 2 and the parametric stopping rule approaches, we can draw in two steps: $(\rho,\theta)\sim p(\rho,\theta)$, and $\mathbf{y}_i\sim p(\mathbf{y}_i|\rho,\theta)$, and map these to the $(\bar{y}_{n_i},s_{n_i}^2)$'s. 
+
+The expected utility $u(\bar{y}_{n_1},s^2_{n_1},a)$ for each of $a\in \{T,P\}$ involves
+\begin{align}
+\mathrm{E}[(\theta-c)^{+}|s_{n}^2,\bar{y}_{n}]&=\int_0^\infty \theta\times t_{\nu_{n}}(\theta |\tilde\mu_{n}-c,\tilde \sigma_{n}^2/\kappa_{n})  d\theta
+\end{align}for some $c$. This involves $t_{\nu_{n}}(.)$ and $F_{t_{\nu_{n}}}(.)$ which can be efficiently numerically computed.  Unlike (\ref{normM_knownVar_prior_T_i}--\ref{normM_knownVar_prior_P_i}), we don't know how to express the boundaries of $T_i$ and $P_i$ in terms of $(\bar{y}_n,s^2_{n})$. It is therefore necessary to compute $u(\bar{y}_{n},s^2_{n},a)$ for each of $a\in\{T,P\}$ and pick the highest value. 
+
+We postulate $\gamma=\{\alpha_1^{-},\beta_1^{-},\alpha_1^{+},\beta_1^{+},\ldots\alpha_{i_*-1}^{-},\beta_{i_*-1}^{-},\alpha_{i_*-1}^{+},\beta_{i_*-1}^{+}\}$, and
+\begin{align}\Gamma &=\{\gamma: \alpha_{i}^{-}\leq \alpha_{i}^{+},\beta_{i}^{-} \leq 0\leq \beta_{i}^{+},i=1,\ldots,i_*-1\}\\
+C_i &=\{\mathbf{y}_i:  \alpha_i^{-}+\beta_i^{-} s_i^2\leq\bar{y}_i\leq\alpha_i^{+}+\beta_i^{+} s_i^2\}
+\end{align}
+
+\section*{Bibliography}
+\printbibliography[heading=none]
+
+\end{document}

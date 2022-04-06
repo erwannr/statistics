@@ -1,50 +1,42 @@
-\documentclass[11pt]{article}
-\usepackage{amsmath,amssymb,amsthm}
-\usepackage{mathrsfs}
+\documentclass{article}
+\usepackage[
+bibencoding=auto
+,backend=biber
+,sorting=ynt
+% ,style=verbose-ibid
+% ,citetracker
+% ,sorting=none
+% ,autolang%error: no value specified for autolang.
+]{biblatex}
+\usepackage{csquotes, datetime2, keyfloat}
+\usepackage{amsmath, amssymb, amsthm}
 \usepackage{algorithmic}
-\usepackage{verbatim}
-\usepackage{graphicx}
-\usepackage{latexsym}
-\usepackage{euscript}
-\usepackage{vmargin}
-\usepackage[dvips]{epsfig}
-\usepackage{pst-tree}
-\usepackage{psfrag}
-%\usepackage{notebook2e}
-%\usepackage{lcaption}
+%\newcounter{res}
+%\newtheorem{result}[res]{Result}
+%\usepackage{filecontents}
+\addbibresource{../rogard.bib}% syntax for version >= 1.2
+\usepackage{hyperref}
+\ProvideDocumentCommand{\docfillblank}{}{\begin{minipage}[t]{\linewidth}\end{minipage}}
+\ProvideDocumentCommand{\origDate}{}{\DTMdate{2007-05-14}}
+\ProvideDocumentCommand{\ThisDate}{}{\DTMdate{2022-04-04}}
 
-\setpapersize{USletter}
-\setmarginsrb{2.5cm}{2.5cm}{2.5cm}{1.75cm}{0pt}{0mm}{0pt}{0.70cm}
-
-%Array
-\setlength{\tabcolsep}{30pt}
-\renewcommand{\arraystretch}{1.2}
-
-% Lcaption
-%\smartcap
-%\CapSize=4.5in
-
-% Float Control
-\renewcommand{\topfraction}{0.95}
-\renewcommand{\bottomfraction}{0.95}
-\renewcommand{\textfraction}{0.05}
-\renewcommand{\floatpagefraction}{.95}
-
-
-%\title
-%{Toy problem...}
-%\author{}
 \begin{document}
-%\maketitle
+
+\title{Simulation to solve Bayesian sequential clinical trial problem using parametric decision boundaries\footnote{Revisions: \url{https://github.com/erwannr/statistics/commits/main/ratio_nc}}}
+
+\author{Erwann Rogard}
+\date{\ThisDate}
+
+\maketitle
+
 \begin{abstract}
-We revisit the Bayesian sequential clinical trial problem of Carlin
-et al. (1998) proposing efficient simulation schemes for finding the
+We revisit a Bayesian sequential clinical trial problem\cite{carlin1998} by proposing efficient simulation schemes for finding the
 optimal parameters of the continuation region (equivalently stopping
-rule).
+rule). This is a re-edition of a note from \DTMdate{2006-10-03}\footnote{\url{https://github.com/erwannr/statistics/tree/main/carlin_revis}}.
 \end{abstract}
 
 \section{Introduction}
-In Section 2, we introduce the problem formulation for a simple
+In \autoref{sec:formul}, we introduce the problem formulation for a simple
 model and utility framework, starting from the intuitive (but
 practically not recommended) Bellman recursion, and translating it
 into a parametric stopping rule (SR) approach, which is the focus of
@@ -75,7 +67,8 @@ complicated and unknown policy spaces.
 In Section 6, we address convergence issues from a theoretical
 standpoint, and bridge our work with established sequential trials'
 methods/ and or an application
-\section{Problem formulation}
+
+\section{Problem formulation}\label{sec:formul}
 Consider a sequential clinical trial extending over a maximum of $n$
 periods to assess the effect $\theta$ of a treatment, $T$, in
 comparison to the placebo, $P$. Suppose that at period $i$, $0\leq
@@ -189,6 +182,7 @@ can be made linear in $n$ by depth first processing:
 %\mathbf{y}^j\sim p(\mathbf{y}^j|\mathbf{y}_i)\}\\\}$
 %\end{enumerate}
 %\end{algorithm}
+
 \subsection{independent paths alternative}
 To remedy the first limitation of algorithm \ref{alg:BR} we would
 like replace the simulated tree in the first tree by independent
@@ -228,6 +222,7 @@ p(\mathbf{y}_{i+1}^k|\mathbf{y}_{i}^l)}
 \end{align}
 \end{enumerate}
 \end{algorithm}
+
 \subsection{stopping rule formulation}
 We define
 \begin{align}\label{tau_*}
@@ -283,7 +278,9 @@ BR--IS) of $\upsilon$ a positive bias, whereas
 (\ref{BR_IS_est_upsilon_neg}) has a negative bias. By combining the
 two estimators, we can therefore obtain an interval which contains
 the true value $\upsilon$ for a given confidence level.
-\section{Parametric decision boundaries}
+
+\section{Parametric decision boundaries}\label{sec:param}
+
 The second way to estimate the stopping rule is to model it. Let
 $C=(C_1,...,C_{n-1})$ and suppose we postulate $\mathbf{C}:\Gamma
 \rightarrow\boldsymbol{\mathcal{Y}}^{n-1}$. As we saw, the
@@ -334,6 +331,7 @@ variables. Moreover, $\mu(\mathbf{y}_i)=\mathbf{s}_i
 $\mu(\mathbf{y}_0)=\mu$ and $y_{i+1}=\theta+\epsilon_{i+1}$ so that
 conditional on $\theta$, $\{\mu(\mathbf{y}_i)\}_{i=0}^{n}$ evolves
 as a Markov chain.
+
 \subsection{The optimization problem}
 The algorithms that we will consider to solve
 (\ref{sup_upsilon_par_sr}) start from an initial guess
@@ -416,7 +414,8 @@ resulting expression is no longer an expectation with respect to a
 well defined distribution. However, we can treat this expression as
 a un un--normalized density, and since it can be evaluated, the
 problem amenable to importance sampling or Markov chain simulation.
-\section{Method 1}
+
+\section{Method 1}\label{sec:meth:i}
 \subsection{Procedure}
 We now take $\widehat\nabla \upsilon$ to be a simulation
 approximation to finite difference gradient,
@@ -540,6 +539,7 @@ $E[|1/\epsilon_k|]\leq \infty$, which is verified for independent
 $\epsilon_k$'s distributed as $\pm 1$ Bernoulli's. The search for an
 optimal $h$ can be derived from that of the standard finite
 difference method (see Section tuning the gains parameters)
+
 \subsection{Importance region}
 The quantity (\ref{FD_u}) has value $0$ outside of the set
 \begin{align}
@@ -741,7 +741,8 @@ it is positive definite.
 %\label{delta_opt_adaptive}
 %P(|(\bar{\xi}_{m}-\xi)/\xi|>\epsilon)<\delta\Leftrightarrow
 %m>(\Phi^{-1}(1-\delta/2)\sigma_{\hat\xi}/(|\xi|\epsilon))^2
-\section{Method 2}
+
+\section{Method 2}\label{sec:meth:i}
 Recall (\ref{upsilon_par_sr_i}). Without loss of generality we will
 now ignore $\mathbf{c}_j$ and the upper bounds and focus on a given
 $i$:
@@ -844,7 +845,8 @@ section (\ref{normal_normal}), after condition on $\sigma$.
 %\idotsint\limits_{\mathbf{R}_{i-1}}\Bigl[
 %u(i,\theta,d^{\pm})p(\theta,\mathbf{y}_{k-1},\gamma_k,\mathbf{y}_{k\leq
 %l \leq i}) \Bigr] d \mathbf{y}_{i-1}  d \theta$.
-\section{Model extensions}
+
+\section{Model extensions}\label{sec:ext}
 We begin by extending (\ref{normal_normal}), which relies on known
 variances to the most immediate generalization:
 \begin{align}\label{N_xi}
@@ -864,7 +866,7 @@ $\nu_i\sigma^2(\mathbf{y}_i)=\nu_0\sigma_0^2+(i-1)s(\mathbf{y}_{0<j\leq
 i})^2+\frac{\kappa_0(\kappa_0+i)}{i}(\overline{\mathbf{y}}_{i}-y_0)^2$
 and $s^2(.)$ is the the sample variance.
 
-\section{Application}
+%\section{Application}\label{sec:appl}
 %Here we compare the performances of $p$, $q$, $q^*$ using steepest
 %descent, with $n=40$ for the first, and $n=20$ for the last two (so
 %that the three use the same \emph{total} number of simulation draws
@@ -938,9 +940,11 @@ and $s^2(.)$ is the the sample variance.
 %\includegraphics[width=2.5in]{C:/Documents/work/Programs/Mathematica/projects/sequential/2006_06_12_test_carlin_tableform_SIMS2_LOGOPT_LOGVALS.eps}
 %\caption{Same as Figure 3, with
 %$(\gamma_{-}^{(0)},\gamma_{+}^{(0)})=(\mu_1-0.1,\mu_1+0.1)=(-0.194,-0.044)$}
-%\end{figure}
+% \end{figure}
+
 \section{Appendix}
 \subsection{Variance of importance sampling}
+
 Here, we consider transformation of stopped paths such as
 $(\theta,\mathbf{y}_\tau)\rightarrow (w \times u)
 (\theta,\mathbf{y}_{\tau})$. Let $x_i \triangleq
@@ -966,6 +970,7 @@ size. The formula for this variance using normalized weights is:
 (\tilde w \times u)(z_j)]\\
 &\rightarrow\frac{1}{n}\mathrm{E}_p[\tilde w(z)(u(z)-\upsilon)^2]
 \end{align}
+
 \subsection{Bias variance decomposition of the finite difference method}
 To begin, let's assume that $q(.)=p(.)$, $n=2$ and consider the
 univariate case by fixing $k=1$. Fix $h>0$, so that
@@ -1135,9 +1140,16 @@ Markov chain context).
 %\end{align}
 
 \subsection{misc}
+Given $x\sim N(\mu,\sigma^2)$,
 \begin{align}
-x\sim N(\mu,\sigma^2) \Rightarrow \mathrm{E}[x 1\{a\leq x\leq
-b\}]=-\sigma(\phi((b-\mu)/\sigma)-\phi((a-\mu)/\sigma)+\mu(\Phi((b-\mu)/\sigma)-\Phi((a-\mu)\sigma))
+\mathrm{E}[x 1\{a\leq x\leq
+  b\}] = &-\sigma(\phi((b-\mu)/\sigma)\\\nonumber
+  & -\phi((a-\mu)/\sigma)\\\nonumber
+  & +\mu(\Phi((b-\mu)/\sigma)\\\nonumber
+    & -\Phi((a-\mu)\sigma))
 \end{align}
+
+\section*{Bibliography}
+\printbibliography[heading=none]
 
 \end{document}

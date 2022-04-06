@@ -210,7 +210,7 @@ The procedure to estimate (\ref{nabla_fd}) is to sample $m$ iid paths from $q(\t
 Each term in the difference in (\ref{nabla_u_is}) is evaluated with the same path which reduces variance provided the two terms are positively correlated. At each iteration, $b$, a fresh sample of size $m$ is generated and $\hat \nabla_{\mathrm{FD}}^{(b)}\upsilon$ is computed. In setting $m$ we should keep in mind that averaging of the $\gamma^{(b)}$'s is already present, as implicit in (\ref{newt_iter}). 
 
 We can weaken the above formulation to $w(\theta,\mathbf{y}_{\tau}) \propto p(\theta,\mathbf{y}_\tau) / q(\theta,\mathbf{y}_\tau)$ with an abitrary normalizing constant, which implies that we should rescale the weights to sum to one.
-This may be a matter of design\cite{Hesterb1995} or necessity, in case either of $p(.)$ or $p(.)$ are known only up to a constant of proportionality.
+This may be a matter of design\cite{hesterb1995} or necessity, in case either of $p(.)$ or $p(.)$ are known only up to a constant of proportionality.
 Unbiasedness of $\hat \nabla_{\mathrm{FD}}\upsilon$, relative to $\nabla_{\mathrm{FD}}\upsilon$ is only preserved in the limit as $n\rightarrow \infty$.
 
 \section*{Bibliography}

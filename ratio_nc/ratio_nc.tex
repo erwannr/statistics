@@ -1,10 +1,42 @@
+\documentclass{article}
+\usepackage[
+bibencoding=auto
+,backend=biber
+,sorting=ynt
+% ,style=verbose-ibid
+% ,citetracker
+% ,sorting=none
+% ,autolang%error: no value specified for autolang.
+]{biblatex}
+\usepackage{csquotes, datetime2, keyfloat}
+\usepackage{amsmath, amssymb}
+%\newcounter{res}
+%\newtheorem{result}[res]{Result}
+%\usepackage{filecontents}
+\addbibresource{../rogard.bib}% syntax for version >= 1.2
+\usepackage{hyperref}
+\ProvideDocumentCommand{\docfillblank}{}{\begin{minipage}[t]{\linewidth}\end{minipage}}
+\ProvideDocumentCommand{\origDate}{}{\DTMdate{2007-05-14}}
+\ProvideDocumentCommand{\ThisDate}{}{\DTMdate{2022-04-04}}
+
+\begin{document}
+
+\title{On ratios of normalizing constants\footnote{Revisions: \url{https://github.com/erwannr/statistics/commits/main/ratio_nc}}}
+\author{Erwann Rogard}
+\date{\ThisDate}
+
+\maketitle
+
+\begin{abstract}This is a slighly revised version of a note on RC's dated \DTMdate{2007-04-24} that came after that on the stochastic mesh\footnote{\url{https://github.com/erwannr/statistics/tree/main/stochmesh}}, hence some gaps (where I spootd them, they are indicated in the source file)\end{abstract}
+
 \section{Ratios of normalizing constants}
-In the first subsection, we assume that the pseudo--data points have been determined and explain how to estimate the expectations of interest for a particular $(m_1,m_2)$. 
+In the first subsection, % TODO gap
+we assume that the pseudo--data points have been determined and explain how to estimate the expectations of interest for a particular $(m_1,m_2)$. 
 
 Let $\mathbf{y}_1=\mathbf{y}_{i}^{m_1}$, $\mathbf{y}_2=\mathbf{y}_{i+1}^{m_2}$, $\mathbf{y}_3=(\mathbf{y}_{i}^{m_1},\mathbf{y}_{i+1}^{m_2})$. We denote the likelihood densities $L_{l}(\xi)=p(\mathbf{y}_l|\xi),l=1,2,3$ and the posterior densities $p_l(\xi)=p(\xi|\mathbf{y}_l),l=0,\ldots,3$. Let $\zeta_0$ and $q_0(.)$ denote the normalizing constant and unnormalized density, respectively, for the prior i.e. $p_0(\xi)=q_0(\xi)/\zeta_0$. Let $\zeta_l=p(\mathbf{y}_l)=\mathrm{E}[L_l(\xi)],l=1,2,3$. We denote the un--normalized posterior densities $q_l(\xi),l=1,2,3$ i.e. $p_l(\xi)=p_0(\xi)L_l(\xi)/\zeta_l=q_l(\xi)/(\zeta_0\zeta_l),l=1,2,3$.
 %We assume that the likelihoods $L_l(.)$ are known exactly i.e. that there are no unknown normalizing constant depending on $\xi$ (see Gelman et al, 2004, Section 10.4 for counterexamples). 
 
-By assumption, each of $\mathbf{y}_l,l=1,2,3$ is associated with a known pseudo data point $\mathbf{y}_l^*,l=1,2,3$. The same conventions apply, with the addition of superscript $^*$. In addition, let $\pi_{l}(.)$ denote a completely known approximation to $p_l^*(.)$ for $l=0,\ldots,3$ (see Gelman et al, 2004, Chapter 9). This can be complemented with an adative procedure as in Oh and Berger, 1992. 
+By assumption, each of $\mathbf{y}_l,l=1,2,3$ is associated with a known pseudo data point $\mathbf{y}_l^*,l=1,2,3$. The same conventions apply, with the addition of superscript $^*$. In addition, let $\pi_{l}(.)$ denote a completely known approximation to $p_l^*(.)$ for $l=0,\ldots,3$\cite[Chapter 9]{gelman2004}. % TODO This can be complemented with an adative procedure as in Oh and Berger, 1992. 
 
 Our problem is to estimate
 \begin{align}
@@ -18,7 +50,7 @@ We define the relative error as
 \mathrm{RE}^2(\hat r)=\mathrm{E}[(\hat r-r)^2]/r^2
 \end{align}
 
-\subsection{IS}
+\subsection{Importance sampling}
 Observe that 
 $\mathrm{E}_{\pi_l}[q_l(\xi)/\pi_l(\xi)]=\zeta_0\zeta_l$ and therefore
 \begin{align}\label{r_is}
@@ -42,14 +74,12 @@ r^*_{\mathrm{IS}}&=\frac{\mathrm{E}_{p_1^*}[\pi_1(\xi)/q_1^*(\xi)]\mathrm{E}_{p_
 %\begin{align}
 %r^*_{\mathrm{BS}}=\frac{\mathrm{E}_{p_1^*}[L_2^*(\xi)\alpha_1(\xi)]\mathrm{E}_{p_2^*}[L_1^*(\xi)\alpha_2(\xi)]}{\mathrm{E}_{p_0}[L_3^*(\xi)\alpha_1(\xi)]\mathrm{E}_{p_0}[L_3^*(\xi)\alpha_2(\xi)]}
 %\end{align}which follows from $p_1^*(\xi)L_2(\xi)\alpha_1(\xi)=\frac{p_0(\xi)L_1^*(\xi)}{\zeta_1}L_2^*(\xi)\alpha_1(\xi)=\frac{\zeta_3}{\zeta_1}\frac{p_0(\xi)L_3^*(\xi)}{\zeta_3}\alpha_1(\xi)=\frac{\zeta_3}{\zeta_1}p_3^*(\xi)\alpha_1(\xi)$.
-\subsection{RIS}
+
+\subsection{Ratio importance sampling}
 We now consider a ratio importance sampling formulation and $p_{1,2}^*(.)$, an arbitrary distribution of the form $p_{1,2}^*(\xi)=p_0(\xi)L_{1,2}(\xi)/\zeta_{1,2}^*$. Define
 \begin{align}
 \tilde{r}_{\mathrm{R}}=\frac{\mathrm{E}_{p_{1,2}^*}[L_{1}(\xi)L_{2}(\xi)/L_{1}^*(\xi)]}{\mathrm{E}_{p_{1,2}^*}[L_{1}(\xi)/L_{1,2}^*(\xi)]\mathrm{E}_{p_{1,2}^*}[L_{2}(\xi)/L_{1,2}^*(\xi)]}
 \end{align}and note that $r=\tilde{r}_{\mathrm{R}}\times \zeta_{1,2}^*$. The advantage of this formulation is that if the same sample $\{\xi^k\}_{k=1}^{k_*}\stackrel{\mathrm{iid}}{\sim} p_{1,2}(\xi)$ is used for estimating each expectation, we can reuse the integrands in the denominator to compute the numerator. The price, however, is that we have to determine the optimal $p_{1,2}^*$ for each combination of clusters $(c_i,c_{i+1})$. Again, this cost can be amortized over all combination of data points $(\mathbf{y}_i^j,\mathbf{y}_{i+1}^m)$ which map to $(c_i,c_{i+1})$.
 
 
-
-
-
-
+\end{document}

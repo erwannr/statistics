@@ -195,7 +195,7 @@ L(D|\survfullpar)&=\prod_{\{n:\isfail_\nentry=1\}} f(\tfail_n|\survfullpar)\prod
 %&=(\alpha \gamma)^{\nfailed}
 %\exp\left((\alpha-1)\sum_{\nentry=1}^{\nentries}\isfail_{\nentry}\log(\tmin_\nentry)-\gamma\sum_{\nentry=1}^{\nentries}{\tmin_\nentry}^{\alpha}\right)
 \end{align}
-The \ph\ also permits an important semi--parameric formulaulation under which $\basehazard(.)$ is unspecified and the following partial likelihood\cite{Sellke1983}
+The \ph\ also permits an important semi--parameric formulaulation under which $\basehazard(.)$ is unspecified and the following partial likelihood\cite{sellke1983}
 %\cite{10.1093/biomet/70.2.315}
 may be justified: 
 \begin{align}\label{survcoxlogliksellke}
@@ -205,7 +205,7 @@ may be justified:
 &=\survcoxloglikcox
 \end{align}%This stems from a partial likelihood argument, under which the likelihood is factored via the multiplication rule for probabilities, and discarding those expression that involve nuisance parameters.
 The term inside the parenthesis of (\ref{survcoxloglikcox}) can be interpreted as the probability that failure is on individual $\nentry$, conditional on failure time equating $\tfail_\nentry$ and the risk set $\{l:\atrisk_l(t,\tfail_\nentry)=1\}$. %there should be a term that takes into account *some elapsed time* for (\ref{lik_surv_anal_cox_2})
-The score and information matrix (adapted from \cite{Lawless2002}, Chapter 7) are
+The score and information matrix (adapted from \cite{lawless2002}, Chapter 7) are
 \begin{align}\label{coxscore}
 \coxscore(t|\survfulleffect)&=\nabla_{\survfulleffect} \coxloglik(t|\survfulleffect)\\\label{coxscore2}
 &=\sum_{\nentry} \isfail_{\nentry}(t) (\survfullcov_\nentry-\bar x(t,\tfail_\nentry|\survfulleffect))\\
@@ -221,11 +221,11 @@ n^{-1/2}\coxscore(t|\survfulleffect)\sim N(0,n^{-1}\coxinfo(t|\survfulleffect))\
 \coxsurvfulleffectmle(t|\survfulleffect)\sim N(\survfulleffect,\coxinfo^{-1}(t|\coxsurvfulleffectmle))
 \end{align}where $\coxsurvfulleffectmle$ solves the estimating equation $\coxscore(t|\coxsurvfulleffectmle)=0$. The second line follows from $\coxscore(t|\coxsurvfulleffectmle)\approx \coxscore(t|\survfulleffect)+(\hat\survfulleffect-\survfulleffect)\coxinfo(t|\survfulleffect)$.
 
-For the particular case $\survfullcov\equiv\treatindic$, $\coxscore(t|\treateffect=0)$ is an estimate for the  observed$-$expected number of events in a  treatment group, and it is called the log--rank test statistic. Let $\coxscorescaled(t|\treateffect)=\coxscorescaledformula{t|\treateffect}$. It underpins the popular test of equality between two lifetime distributions: $\mathrm{reject\ if\ }|\coxscorescaled(t|\treateffect=0)|>c_\alpha$. Let $\coxscorescaledapprox{\treateffect_*}(t|\treateffect)=\coxscorescaledapproxformula{t}{\treateffect_*}{\treateffect}$. This quantity is useful for sequential analysis. Specifically, if $\interim=1,...,\terminal$ indexes interim analyses, according to Chapter 9 of \cite{Ibrahim2004}, for $\treateffect$ close to $0$, $\coxscorescaledapprox{\treateffect_*}(t_1,....,t_{\terminal}|\treateffect)=\{\coxscorescaledapprox{\treateffect_*}(t_1|\treateffect),...,\coxscorescaledapprox{\treateffect_*}(t_{\terminal}|\treateffect)\}$ is a normal vector such that
+For the particular case $\survfullcov\equiv\treatindic$, $\coxscore(t|\treateffect=0)$ is an estimate for the  observed$-$expected number of events in a  treatment group, and it is called the log--rank test statistic. Let $\coxscorescaled(t|\treateffect)=\coxscorescaledformula{t|\treateffect}$. It underpins the popular test of equality between two lifetime distributions: $\mathrm{reject\ if\ }|\coxscorescaled(t|\treateffect=0)|>c_\alpha$. Let $\coxscorescaledapprox{\treateffect_*}(t|\treateffect)=\coxscorescaledapproxformula{t}{\treateffect_*}{\treateffect}$. This quantity is useful for sequential analysis. Specifically, if $\interim=1,...,\terminal$ indexes interim analyses, according to Chapter 9 of \cite{ibrahim2004}, for $\treateffect$ close to $0$, $\coxscorescaledapprox{\treateffect_*}(t_1,....,t_{\terminal}|\treateffect)=\{\coxscorescaledapprox{\treateffect_*}(t_1|\treateffect),...,\coxscorescaledapprox{\treateffect_*}(t_{\terminal}|\treateffect)\}$ is a normal vector such that
 \begin{align}\label{coxscorescaledapproxdist}
 \coxscorescaledapprox{\treateffect_*}(t_\interim|\treateffect)&\sim N(\coxinfo^{1/2}(t_\interim|\treateffect_*)\treateffect,1))\\\label{coxscorescaledapproxdist2}
 \mathrm{Cov}(\coxscorescaledapprox{\treateffect_*}(t_i|\treateffect),\coxscorescaledapprox{\treateffect_*}(t_{i+k}|\treateffect))|\treateffect_*&=\coxinfo^{1/2}(t_\interim|\treateffect_*)\coxinfo^{-1/2}(t_{\interim+k}|\treateffect_*)
-\end{align}\textbf{todo}: make contiguity argument precise (Chapters 7\&9\cite{Vaart1998} and \cite{Bilias1997}) \textbf{todo}Although \cite{Ibrahim2004} use $\treateffect_*=0$ would it not be better to take $\treateffect_*=\hat\treateffect$, the mle?
+\end{align}\textbf{todo}: make contiguity argument precise (Chapters 7\&9\cite{vaart1998} and \cite{bilias1997}) \textbf{todo}Although \cite{ibrahim2004} use $\treateffect_*=0$ would it not be better to take $\treateffect_*=\hat\treateffect$, the mle?
 
 Formulations that are intermediary between the fully parameterized version of $L(.|\survfullpar)$ and the partial likelihood $\coxlik(.|\survfulleffect)$ include the piecewise constant hazard model, such that $\survfullpar=(\lambda,\survfulleffect)$ where $\lambda$ is a vector of constants.
 

@@ -1,39 +1,21 @@
 \documentclass[11pt]{article}
+\usepackage[
+bibencoding=auto
+,backend=biber
+,sorting=ynt
+% ,style=verbose-ibid
+% ,citetracker
+% ,sorting=none
+% ,autolang%error: no value specified for autolang.
+]{biblatex}
+\usepackage{csquotes, datetime2, keyfloat}
+%\newcounter{res}
+%\newtheorem{result}[res]{Result}
+%\usepackage{filecontents}
+\addbibresource{../rogard.bib}% syntax for version >= 1.2
 \usepackage{amsmath,amssymb,amsthm}
-\usepackage{mathrsfs}
-%\usepackage{algorithmic}
-\usepackage{verbatim}
-\usepackage{graphicx}
-\usepackage{latexsym}
-\usepackage{euscript}
-\usepackage{vmargin}
-\usepackage[dvips]{epsfig}
-\usepackage{pst-tree}
-\usepackage{psfrag}
-%\usepackage{flafter}%that's only to keep figures from floating
-%\usepackage{natbib} %DOES NOT WORK
-
-%\usepackage{notebook2e}
-%\usepackage{lcaption}
-
-\setpapersize{USletter}
-\setmarginsrb{2.5cm}{2.5cm}{2.5cm}{1.75cm}{0pt}{0mm}{0pt}{0.70cm}
-
-%Array
-\setlength{\tabcolsep}{30pt}
-\renewcommand{\arraystretch}{1.2}
-
-% Lcaption
-%\smartcap
-%\CapSize=4.5in
-
-
-% Float Control
-\renewcommand{\topfraction}{0.95}
-\renewcommand{\bottomfraction}{0.95}
-\renewcommand{\textfraction}{0.05}
-\renewcommand{\floatpagefraction}{.95}
-
+\usepackage{datetime2, csquotes}
+%---
 \newcommand{\tangnt}{t^{\mathrm{u}}}
 \newcommand{\linejoin}{t^{\mathrm{l}}}
 \newcommand{\upperlog}{u}
@@ -44,15 +26,27 @@
 
 \newcommand{\arsindex}{k}
 \newcommand{\arsmaxindex}{K}
+% ---
+% ---
+\ProvideDocumentCommand{\origDate}{}{\DTMdate{2006-11-08}}
+\ProvideDocumentCommand{\ThisDate}{}{\DTMdate{2022-04-06}}
+% ---
 
-%{set up}
-\title{Derivative Based Adaptive Rejection Sampling: Summary}
+\title{Derivative Based Adaptive Rejection Sampling\\ (a review)}
 \author{Erwann Rogard}
+\date{\ThisDate}
 
+\usepackage{hyperref}
 \begin{document}
-\bibliographystyle{plain}
+
 \maketitle
-The purpose of the algorithm (\cite{1992Gilks}, further detailed in \cite{1993Wild}), is to sample from a univariate log--concave (target) density, known up to a constant of proportionality, as commonly arising in Gibbs sampling applications. The algorithm is derived from rejection sampling but instead of being pre--specified, the covering (proposal) density is constructed adaptively using only evaluations of the un--normalized density and its derivative. Geometrically, the log of the former is the upper envelope of the convex hull delimited by the tangents to the log un--normalized target at the evaluation points. This modification to the original algorithm requires a new rejection rule which depends on the distances between the true density and the upper hull, evaluated at the candidate draw, and that of the latter to a lower hull, formed by joining the evaluation points. Consider the definitions:
+
+% This algorithm generates draws from an arbitrary log-concave pdf using only the log pdf (up to an additive constant) and the derivative. This algorithm is commonly used for sampling from full conditional distributions arising in Gibbs sampling. 
+
+\begin{abstract}This review was first published on \DTMdate{2007-11-19} as companion to a Mathematica package\footnote{\url{https://library.wolfram.com/infocenter/ID/7071/}}. The present version is just a revamp\footnote{Revisions:\url{https://github.com/erwannr/statistics/commits/main/deriv_ars}}.
+\end{abstract}
+
+The purpose of the algorithm is to sample from a univariate log--concave (target) density, known up to a constant of proportionality, as commonly arising in Gibbs sampling applications\cite{gilks1992}\cite{wild1993}. The algorithm is derived from rejection sampling but instead of being pre--specified, the covering (proposal) density is constructed adaptively using only evaluations of the un--normalized density and its derivative. Geometrically, the log of the former is the upper envelope of the convex hull delimited by the tangents to the log un--normalized target at the evaluation points. This modification to the original algorithm requires a new rejection rule which depends on the distances between the true density and the upper hull, evaluated at the candidate draw, and that of the latter to a lower hull, formed by joining the evaluation points. Consider the definitions:
 \begin{center}
 \begin{tabular}{|@{\hspace{1ex}}l@{\hspace{1ex}}|@{\hspace{1ex}}l@{\hspace{1ex}}|@{\hspace{1ex}}p{2.9in}@{\hspace{1ex}}|}\hline
 \multicolumn{3}{|@{\hspace{1ex}}l|}{Definitions}\\\hline
@@ -118,7 +112,7 @@ else\{ goto 1.\}\\
 
 %A function object is a more general concept than a function because a function object can have state that persist across several calls (like a static local variable) and can be initialized and examined from outside the object (unlike a static local variable). For example:
 
-\bibliographystyle{plain}
-\bibliography{mybib.bib}
+\section*{Bibliography}
+\printbibliography[heading=none]
 
 \end{document}
